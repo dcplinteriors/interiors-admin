@@ -1,0 +1,505 @@
+{
+  "@@locale": "en",
+  "appTitle": "DCPL Admin",
+  "@appTitle": {
+    "description": "Application title (browser tab + app bar)."
+  },
+  "loginTitle": "Admin Sign In",
+  "@loginTitle": {
+    "description": "Heading on the login screen."
+  },
+  "emailLabel": "Email",
+  "@emailLabel": {
+    "description": "Email text field label."
+  },
+  "passwordLabel": "Password",
+  "@passwordLabel": {
+    "description": "Password field label on the login screen."
+  },
+  "signInButton": "Sign In",
+  "@signInButton": {
+    "description": "Login submit button."
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Sign-out action in the app bar."
+  },
+  "navProjects": "Projects",
+  "@navProjects": {
+    "description": "Navigation rail label for the Projects tab."
+  },
+  "navSupervisors": "Supervisors",
+  "@navSupervisors": {
+    "description": "Navigation rail label for the Supervisors tab."
+  },
+  "navRequests": "Requests",
+  "@navRequests": {
+    "description": "Navigation rail label for the Requests tab."
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic dialog cancel button."
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button on error states."
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Tooltip for the in-place data refresh button on list screens."
+  },
+  "active": "Active",
+  "@active": {
+    "description": "Project status chip: active."
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Project status chip: completed."
+  },
+  "unassigned": "Unassigned",
+  "@unassigned": {
+    "description": "Assignment chip when no supervisor is assigned."
+  },
+  "newProject": "New project",
+  "@newProject": {
+    "description": "Button that opens the create-project dialog."
+  },
+  "countProjects": "{count, plural, =1{1 project} other{{count} projects}}",
+  "@countProjects": {
+    "description": "Header count next to the Projects title.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "colProject": "Project",
+  "@colProject": {
+    "description": "Projects table column header: project name."
+  },
+  "colProjects": "Projects",
+  "@colProjects": {
+    "description": "Supervisors table column header: the projects assigned to a supervisor."
+  },
+  "colClient": "Client",
+  "@colClient": {
+    "description": "Table column header: client name."
+  },
+  "colPo": "PO Number",
+  "@colPo": {
+    "description": "Table column header: purchase-order number."
+  },
+  "colDate": "Date",
+  "@colDate": {
+    "description": "Projects table column header: project date."
+  },
+  "colSupervisor": "Supervisor",
+  "@colSupervisor": {
+    "description": "Table column header: assigned supervisor."
+  },
+  "colStatus": "Status",
+  "@colStatus": {
+    "description": "Table column header: status."
+  },
+  "noProjectsTitle": "No projects yet",
+  "@noProjectsTitle": {
+    "description": "Empty-state title on the Projects screen."
+  },
+  "noProjectsBody": "Create your first project to get started.",
+  "@noProjectsBody": {
+    "description": "Empty-state body on the Projects screen."
+  },
+  "couldntLoadProjects": "Couldn't load projects",
+  "@couldntLoadProjects": {
+    "description": "Error-state title on the Projects screen."
+  },
+  "projectNameLabel": "Project / site name",
+  "@projectNameLabel": {
+    "description": "Create-project form: project/site name field."
+  },
+  "clientNameLabel": "Client name",
+  "@clientNameLabel": {
+    "description": "Create-project form: client name field."
+  },
+  "projectDateLabel": "Project date",
+  "@projectDateLabel": {
+    "description": "Create-project form: date field."
+  },
+  "createProjectHint": "A PO number is generated automatically when you create the project.",
+  "@createProjectHint": {
+    "description": "Hint under the create-project form about PO generation."
+  },
+  "createProject": "Create project",
+  "@createProject": {
+    "description": "Create-project dialog submit button."
+  },
+  "projectCreated": "Project created · {po}",
+  "@projectCreated": {
+    "description": "Snackbar shown after a project is created, with its generated PO number.",
+    "placeholders": {
+      "po": {
+        "type": "String",
+        "example": "PO_26-27_06/0001"
+      }
+    }
+  },
+  "assignSupervisor": "Assign supervisor",
+  "@assignSupervisor": {
+    "description": "Button to assign a supervisor to a project."
+  },
+  "changeSupervisor": "Change",
+  "@changeSupervisor": {
+    "description": "Button to change the assigned supervisor."
+  },
+  "selectSupervisor": "Select a supervisor",
+  "@selectSupervisor": {
+    "description": "Assign-supervisor dialog title."
+  },
+  "assign": "Assign",
+  "@assign": {
+    "description": "Assign-supervisor dialog submit button."
+  },
+  "supervisorAssigned": "Supervisor assigned",
+  "@supervisorAssigned": {
+    "description": "Snackbar after assigning a supervisor."
+  },
+  "noSupervisorsYet": "No supervisors yet. Add one in the Supervisors tab.",
+  "@noSupervisorsYet": {
+    "description": "Empty message in the assign-supervisor picker."
+  },
+  "newSupervisor": "New supervisor",
+  "@newSupervisor": {
+    "description": "Button that opens the create-supervisor dialog."
+  },
+  "countSupervisors": "{count, plural, =1{1 supervisor} other{{count} supervisors}}",
+  "@countSupervisors": {
+    "description": "Header count next to the Supervisors title.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "colName": "Name",
+  "@colName": {
+    "description": "Supervisors table column header: name."
+  },
+  "colEmail": "Email",
+  "@colEmail": {
+    "description": "Supervisors table column header: email."
+  },
+  "colPhone": "Phone",
+  "@colPhone": {
+    "description": "Supervisors table column header: phone."
+  },
+  "noSupervisorsTitle": "No supervisors yet",
+  "@noSupervisorsTitle": {
+    "description": "Empty-state title on the Supervisors screen."
+  },
+  "noSupervisorsBody": "Add a supervisor to invite them by email and assign them to projects.",
+  "@noSupervisorsBody": {
+    "description": "Empty-state body on the Supervisors screen."
+  },
+  "couldntLoadSupervisors": "Couldn't load supervisors",
+  "@couldntLoadSupervisors": {
+    "description": "Error-state title on the Supervisors screen."
+  },
+  "supervisorInviteHint": "We'll email an invite so they can set their own password.",
+  "@supervisorInviteHint": {
+    "description": "Hint in the create-supervisor dialog about the invite email."
+  },
+  "nameLabel": "Name",
+  "@nameLabel": {
+    "description": "Create-supervisor form: name field."
+  },
+  "phoneOptionalLabel": "Phone (optional)",
+  "@phoneOptionalLabel": {
+    "description": "Create-supervisor form: optional phone field."
+  },
+  "emailInviteHelper": "The invite will be sent here.",
+  "@emailInviteHelper": {
+    "description": "Helper under the email field in the create-supervisor dialog."
+  },
+  "sendInvite": "Send invite",
+  "@sendInvite": {
+    "description": "Create-supervisor dialog submit button."
+  },
+  "inviteSent": "Invite sent to {email}",
+  "@inviteSent": {
+    "description": "Snackbar confirming the set-password invite was sent.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "name@dcpl.com"
+      }
+    }
+  },
+  "emailAlreadyInUse": "That email already has an account.",
+  "@emailAlreadyInUse": {
+    "description": "Error strip when the email already has an account (409)."
+  },
+  "emailInUseShort": "Already in use",
+  "@emailInUseShort": {
+    "description": "Inline email-field error when the address is taken."
+  },
+  "materialRequestsTitle": "Material Requests",
+  "@materialRequestsTitle": {
+    "description": "Heading on the Material Requests screen."
+  },
+  "loadMore": "Load more",
+  "@loadMore": {
+    "description": "Button to load the next page of a paginated table."
+  },
+  "colItem": "Item",
+  "@colItem": {
+    "description": "Requests table column header: item / particular."
+  },
+  "colMake": "Make",
+  "@colMake": {
+    "description": "Requests table column header: make / brand."
+  },
+  "colSize": "Size",
+  "@colSize": {
+    "description": "Requests table column header: material size / dimension."
+  },
+  "colQty": "Qty",
+  "@colQty": {
+    "description": "Requests table column header: quantity."
+  },
+  "colSubmitted": "Submitted",
+  "@colSubmitted": {
+    "description": "Requests table column header: submitted date."
+  },
+  "qtyWithUnit": "{qty} {unit}",
+  "@qtyWithUnit": {
+    "description": "Quantity with its unit, e.g. \"12 PCS\".",
+    "placeholders": {
+      "qty": {
+        "type": "String",
+        "example": "12"
+      },
+      "unit": {
+        "type": "String",
+        "example": "PCS"
+      }
+    }
+  },
+  "segToReview": "To review",
+  "@segToReview": {
+    "description": "Requests filter segment: requested items to review."
+  },
+  "segAccepted": "Accepted",
+  "@segAccepted": {
+    "description": "Requests filter segment: accepted."
+  },
+  "segDeclined": "Declined",
+  "@segDeclined": {
+    "description": "Requests filter segment: declined."
+  },
+  "segCancelled": "Cancelled",
+  "@segCancelled": {
+    "description": "Requests filter segment: cancelled."
+  },
+  "segAll": "All",
+  "@segAll": {
+    "description": "Requests filter segment: all statuses."
+  },
+  "countToReview": "{count, plural, =0{None to review} =1{1 to review} other{{count} to review}}",
+  "@countToReview": {
+    "description": "Count for the 'To review' (requested) filter.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "countAccepted": "{count, plural, =1{1 accepted} other{{count} accepted}}",
+  "@countAccepted": {
+    "description": "Count for the Accepted filter.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "countDeclined": "{count, plural, =1{1 declined} other{{count} declined}}",
+  "@countDeclined": {
+    "description": "Count for the Declined filter.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "countCancelled": "{count, plural, =1{1 cancelled} other{{count} cancelled}}",
+  "@countCancelled": {
+    "description": "Count for the Cancelled filter.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "countRequests": "{count, plural, =1{1 request} other{{count} requests}}",
+  "@countRequests": {
+    "description": "Count for the All filter.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "22"
+      }
+    }
+  },
+  "caughtUpTitle": "You're all caught up",
+  "@caughtUpTitle": {
+    "description": "Positive empty-state title when the review queue is clear."
+  },
+  "caughtUpBody": "No material requests are waiting for review.",
+  "@caughtUpBody": {
+    "description": "Empty-state body when the review queue is clear."
+  },
+  "nothingHereTitle": "Nothing here",
+  "@nothingHereTitle": {
+    "description": "Empty-state title for non-review filters with no rows."
+  },
+  "noAcceptedBody": "No accepted requests yet.",
+  "@noAcceptedBody": {
+    "description": "Empty-state body for the Accepted filter."
+  },
+  "noDeclinedBody": "No declined requests.",
+  "@noDeclinedBody": {
+    "description": "Empty-state body for the Declined filter."
+  },
+  "noCancelledBody": "No cancelled requests.",
+  "@noCancelledBody": {
+    "description": "Empty-state body for the Cancelled filter."
+  },
+  "noRequestsBody": "No material requests yet.",
+  "@noRequestsBody": {
+    "description": "Empty-state body for the All filter."
+  },
+  "couldntLoadRequests": "Couldn't load requests",
+  "@couldntLoadRequests": {
+    "description": "Error-state title on the Requests screen."
+  },
+  "statusRequested": "Requested",
+  "@statusRequested": {
+    "description": "Request status chip: requested."
+  },
+  "statusAccepted": "Accepted",
+  "@statusAccepted": {
+    "description": "Request status chip: accepted."
+  },
+  "statusDeclined": "Declined",
+  "@statusDeclined": {
+    "description": "Request status chip: declined."
+  },
+  "statusCancelled": "Cancelled",
+  "@statusCancelled": {
+    "description": "Request status chip: cancelled."
+  },
+  "declinedShort": "Declined",
+  "@declinedShort": {
+    "description": "Compact action-cell text for a declined row."
+  },
+  "withdrawnShort": "Withdrawn",
+  "@withdrawnShort": {
+    "description": "Compact action-cell text for a cancelled (withdrawn) row."
+  },
+  "vendorArrow": "→ {vendor}",
+  "@vendorArrow": {
+    "description": "Accepted-row action cell showing the chosen vendor; the arrow prefixes the vendor name.",
+    "placeholders": {
+      "vendor": {
+        "type": "String",
+        "example": "Hafele Traders"
+      }
+    }
+  },
+  "accept": "Accept",
+  "@accept": {
+    "description": "Accept action button on a requested row."
+  },
+  "decline": "Decline",
+  "@decline": {
+    "description": "Decline action button on a requested row."
+  },
+  "acceptRequestTitle": "Accept request",
+  "@acceptRequestTitle": {
+    "description": "Accept-request dialog title."
+  },
+  "expectedDateLabel": "Expected date",
+  "@expectedDateLabel": {
+    "description": "Accept dialog: expected delivery date field."
+  },
+  "selectDate": "Select a date",
+  "@selectDate": {
+    "description": "Placeholder text in the expected-date field."
+  },
+  "vendorLabel": "Vendor",
+  "@vendorLabel": {
+    "description": "Accept dialog: vendor field."
+  },
+  "remarksOptionalLabel": "Remarks (optional)",
+  "@remarksOptionalLabel": {
+    "description": "Accept dialog: optional remarks field."
+  },
+  "acceptRequestButton": "Accept request",
+  "@acceptRequestButton": {
+    "description": "Accept-request dialog submit button."
+  },
+  "requestAccepted": "Request accepted",
+  "@requestAccepted": {
+    "description": "Snackbar after accepting a request."
+  },
+  "declineRequestTitle": "Decline request",
+  "@declineRequestTitle": {
+    "description": "Decline-request dialog title."
+  },
+  "declineConfirmBody": "This will decline the request. The supervisor will be notified.",
+  "@declineConfirmBody": {
+    "description": "Confirming line in the decline dialog."
+  },
+  "reasonOptionalLabel": "Reason (optional)",
+  "@reasonOptionalLabel": {
+    "description": "Decline dialog: optional reason field."
+  },
+  "declineReasonHelper": "Let the supervisor know why.",
+  "@declineReasonHelper": {
+    "description": "Helper under the reason field in the decline dialog."
+  },
+  "declineButton": "Decline",
+  "@declineButton": {
+    "description": "Decline-request dialog confirm button."
+  },
+  "requestDeclined": "Request declined",
+  "@requestDeclined": {
+    "description": "Snackbar after declining a request."
+  },
+  "attachments": "Attachments",
+  "@attachments": {
+    "description": "Attachments dialog title / tooltip on the attachment button."
+  },
+  "photos": "Photos",
+  "@photos": {
+    "description": "Attachments dialog: photos section heading."
+  },
+  "audioNote": "Audio note",
+  "@audioNote": {
+    "description": "Attachments dialog: audio section heading."
+  },
+  "couldntLoadAttachment": "Couldn't load",
+  "@couldntLoadAttachment": {
+    "description": "Shown when a photo/audio attachment fails to load."
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Generic close button (e.g. the attachments dialog)."
+  }
+}
