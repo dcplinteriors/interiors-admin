@@ -142,7 +142,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "9303bdbdd464d1144099d12d671456f14e5a9869"
+      resolved-ref: cce589f59750e8848a46a5f2a99252d970ec3863
       url: "https://github.com/dcplinteriors-hub/interiors-shared.git"
     source: git
     version: "0.1.0"
@@ -286,6 +286,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "17.3.0"
+  google_fonts:
+    dependency: transitive
+    description:
+      name: google_fonts
+      sha256: ba03d03bcaa2f6cb7bd920e3b5027181db75ab524f8891c8bc3aa603885b8055
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.3"
   hooks:
     dependency: transitive
     description:

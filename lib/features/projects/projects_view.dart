@@ -1,5 +1,6 @@
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/projects/projects.dart';
+import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,68 +15,45 @@ class ProjectsView extends GetView<ProjectsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              // Title + count share a flexible slot so the title can ellipsize
-              // on narrow widths; the actions then sit flush-right (no Spacer to
-              // fight over slack, so no stray gap).
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        l10n.navProjects,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Obx(
-                      () => Text(
-                        l10n.countProjects(controller.projects.length),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Obx(() => RefreshButton(
-                    tooltip: l10n.refresh,
-                    onPressed: controller.fetch,
-                    isRefreshing:
-                        controller.isLoading.value && controller.projects.isNotEmpty,
-                  )),
-              const SizedBox(width: 4),
-              // On phones the "+" alone is enough; the label needs room.
-              if (context.isCompact)
-                IconButton.filled(
-                  tooltip: l10n.newProject,
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (_) => const CreateProjectDialog(),
-                  ),
-                  icon: const Icon(Icons.add),
-                )
-              else
-                FilledButton.icon(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (_) => const CreateProjectDialog(),
-                  ),
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.newProject),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          Obx(() => PageHeader(
+                title: l10n.navProjects,
+                count: '${controller.projects.length}',
+                actions: [
+                  Obx(() => RefreshButton(
+                        tooltip: l10n.refresh,
+                        onPressed: controller.fetch,
+                        isRefreshing: controller.isLoading.value &&
+                            controller.projects.isNotEmpty,
+                      )),
+                  _createAction(context, l10n),
+                ],
+              )),
+          const SizedBox(height: 24),
           Expanded(child: Obx(() => _body(context, l10n))),
           Obx(() => _loadMoreBar(l10n)),
         ],
       ),
     );
   }
+
+  void _openCreate(BuildContext context) => showDialog(
+        context: context,
+        builder: (_) => const CreateProjectDialog(),
+      );
+
+  // Primary action: a full molten button on wide layouts, a compact "+" on phones.
+  Widget _createAction(BuildContext context, AppLocalizations l10n) =>
+      context.isCompact
+          ? IconButton.filled(
+              tooltip: l10n.newProject,
+              onPressed: () => _openCreate(context),
+              icon: const Icon(Icons.add),
+            )
+          : GradientButton(
+              onPressed: () => _openCreate(context),
+              icon: Icons.add,
+              label: l10n.newProject,
+            );
 
   Widget _loadMoreBar(AppLocalizations l10n) {
     if (!controller.hasMore) return const SizedBox.shrink();
@@ -111,10 +89,7 @@ class ProjectsView extends GetView<ProjectsController> {
         title: l10n.noProjectsTitle,
         body: l10n.noProjectsBody,
         action: FilledButton.icon(
-          onPressed: () => showDialog(
-            context: context,
-            builder: (_) => const CreateProjectDialog(),
-          ),
+          onPressed: () => _openCreate(context),
           icon: const Icon(Icons.add),
           label: Text(l10n.newProject),
         ),
@@ -123,83 +98,67 @@ class ProjectsView extends GetView<ProjectsController> {
     return context.isCompact ? _cards(context, l10n) : _table(context, l10n);
   }
 
-  Widget _cards(BuildContext context, AppLocalizations l10n) => ListView.separated(
-        padding: EdgeInsets.zero,
-        itemCount: controller.projects.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (context, i) {
-          final p = controller.projects[i];
-          return EntityCard(
-            title: p.particular,
-            trailing: StatusChip(p.status),
+  Widget _cards(BuildContext context, AppLocalizations l10n) {
+    final status = context.statusColors;
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      itemCount: controller.projects.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, i) {
+        final p = controller.projects[i];
+        return EntityCard(
+          eyebrow: l10n.colProject,
+          railColor: status.forProject(p.status).ink,
+          title: p.particular,
+          trailing: StatusChip(p.status),
+          onTap: () => showDialog(
+            context: context,
+            builder: (_) => ProjectDetailDialog(projectId: p.id),
+          ),
+          fields: [
+            EntityField(l10n.colClient, text: p.clientName),
+            EntityField(l10n.colPo, text: p.po, muted: true),
+            EntityField(l10n.colDate, text: formatDate(p.date)),
+            EntityField(
+              l10n.colSupervisor,
+              child: AssigneePellet(name: p.supervisorName, fallback: l10n.unassigned),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _table(BuildContext context, AppLocalizations l10n) {
+    final status = context.statusColors;
+    return DcplTable(
+      trailing: true,
+      columns: [
+        DcplColumn(l10n.colProject, flex: 3),
+        DcplColumn(l10n.colClient, flex: 2),
+        DcplColumn(l10n.colPo, fixedWidth: 112, numeric: true),
+        DcplColumn(l10n.colDate, fixedWidth: 96, numeric: true),
+        DcplColumn(l10n.colSupervisor, flex: 2),
+        DcplColumn(l10n.colStatus, fixedWidth: 160),
+      ],
+      rows: [
+        for (final p in controller.projects)
+          DcplRow(
+            railColor: status.forProject(p.status).ink,
             onTap: () => showDialog(
               context: context,
               builder: (_) => ProjectDetailDialog(projectId: p.id),
             ),
-            fields: [
-              EntityField(l10n.colClient, text: p.clientName),
-              EntityField(l10n.colPo, text: p.po, muted: true),
-              EntityField(l10n.colDate, text: formatDate(p.date)),
-              EntityField(
-                l10n.colSupervisor,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: AssignmentChip(name: p.supervisorName),
-                ),
-              ),
+            cells: [
+              PrimaryCell(p.particular),
+              Text(p.clientName),
+              Text(p.po, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(formatDate(p.date)),
+              AssigneePellet(name: p.supervisorName, fallback: l10n.unassigned),
+              StatusChip(p.status),
             ],
-          );
-        },
-      );
-
-  Widget _table(BuildContext context, AppLocalizations l10n) => Card(
-    clipBehavior: Clip.antiAlias,
-    child: LayoutBuilder(
-      builder: (context, constraints) => ScrollableTable(
-        width: constraints.maxWidth,
-        height: constraints.maxHeight,
-        child: DataTable(
-          showCheckboxColumn: false,
-          columnSpacing: 24,
-          columns: [
-            DataColumn(label: Text(l10n.colProject)),
-            DataColumn(label: Text(l10n.colClient)),
-            DataColumn(label: Text(l10n.colPo)),
-            DataColumn(label: Text(l10n.colDate)),
-            DataColumn(label: Text(l10n.colSupervisor)),
-            DataColumn(label: Text(l10n.colStatus)),
-          ],
-          rows: [
-            for (final p in controller.projects)
-              DataRow(
-                onSelectChanged: (_) => showDialog(
-                  context: context,
-                  builder: (_) => ProjectDetailDialog(projectId: p.id),
-                ),
-                cells: [
-                  DataCell(
-                    Text(
-                      p.particular,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                  DataCell(Text(p.clientName)),
-                  DataCell(
-                    Text(
-                      p.po,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  DataCell(Text(formatDate(p.date))),
-                  DataCell(AssignmentChip(name: p.supervisorName)),
-                  DataCell(StatusChip(p.status)),
-                ],
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
+          ),
+      ],
+    );
+  }
 }

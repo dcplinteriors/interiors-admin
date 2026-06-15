@@ -4,7 +4,7 @@ import 'package:dcpl_admin/features/material_requests/widgets/accept_request_dia
 import 'package:dcpl_admin/features/material_requests/widgets/decline_request_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_attachments_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_status_chip.dart';
-import 'package:dcpl_shared/models/material_request.dart';
+import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,44 +19,21 @@ class RequestsView extends GetView<MaterialRequestsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              // Title + count share a flexible slot so the title can ellipsize
-              // on narrow widths; the actions then sit flush-right (no Spacer to
-              // fight over slack, so no stray gap).
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        l10n.materialRequestsTitle,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Obx(
-                      () => Text(
-                        _countLabel(l10n),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Obx(() => RefreshButton(
-                    tooltip: l10n.refresh,
-                    onPressed: controller.fetch,
-                    isRefreshing:
-                        controller.isLoading.value && controller.requests.isNotEmpty,
-                  )),
-            ],
-          ),
-          const SizedBox(height: 16),
+          Obx(() => PageHeader(
+                title: l10n.materialRequestsTitle,
+                count: _countLabel(l10n),
+                actions: [
+                  Obx(() => RefreshButton(
+                        tooltip: l10n.refresh,
+                        onPressed: controller.fetch,
+                        isRefreshing: controller.isLoading.value &&
+                            controller.requests.isNotEmpty,
+                      )),
+                ],
+              )),
+          const SizedBox(height: 20),
           Obx(() => _filter(l10n)),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Expanded(child: Obx(() => _body(context, l10n))),
           Obx(() => _loadMoreBar(l10n)),
         ],
@@ -64,8 +41,6 @@ class RequestsView extends GetView<MaterialRequestsController> {
     );
   }
 
-  /// Footer shown only when more pages are available — a "Load more" button (or a spinner
-  /// while the next page loads).
   Widget _loadMoreBar(AppLocalizations l10n) {
     if (!controller.hasMore) return const SizedBox.shrink();
     return Padding(
@@ -95,21 +70,23 @@ class RequestsView extends GetView<MaterialRequestsController> {
   }
 
   Widget _filter(AppLocalizations l10n) => SingleChildScrollView(
-    // Five segments overflow a phone; let them scroll horizontally there.
-    scrollDirection: Axis.horizontal,
-    child: SegmentedButton<String?>(
-      showSelectedIcon: false,
-      segments: [
-        ButtonSegment(value: null, label: Text(l10n.segAll)),
-        ButtonSegment(value: 'requested', label: Text(l10n.segToReview)),
-        ButtonSegment(value: 'accepted', label: Text(l10n.segAccepted)),
-        ButtonSegment(value: 'declined', label: Text(l10n.segDeclined)),
-        ButtonSegment(value: 'cancelled', label: Text(l10n.segCancelled)),
-      ],
-      selected: {controller.statusFilter.value},
-      onSelectionChanged: (s) => controller.setFilter(s.first),
-    ),
-  );
+        scrollDirection: Axis.horizontal,
+        child: SegmentedButton<String?>(
+          showSelectedIcon: false,
+          // softWrap:false so each segment sizes to its full label — in the
+          // unbounded scroll view SegmentedButton would otherwise collapse
+          // segments to their longest word and wrap the labels.
+          segments: [
+            ButtonSegment(value: null, label: Text(l10n.segAll, softWrap: false, maxLines: 1)),
+            ButtonSegment(value: 'requested', label: Text(l10n.segToReview, softWrap: false, maxLines: 1)),
+            ButtonSegment(value: 'accepted', label: Text(l10n.segAccepted, softWrap: false, maxLines: 1)),
+            ButtonSegment(value: 'declined', label: Text(l10n.segDeclined, softWrap: false, maxLines: 1)),
+            ButtonSegment(value: 'cancelled', label: Text(l10n.segCancelled, softWrap: false, maxLines: 1)),
+          ],
+          selected: {controller.statusFilter.value},
+          onSelectionChanged: (s) => controller.setFilter(s.first),
+        ),
+      );
 
   Widget _body(BuildContext context, AppLocalizations l10n) {
     if (controller.isLoading.value && controller.requests.isEmpty) {
@@ -128,8 +105,32 @@ class RequestsView extends GetView<MaterialRequestsController> {
     return context.isCompact ? _cards(context, l10n) : _table(context, l10n);
   }
 
+  // The make + size context line under an item title.
+  String _itemSubtitle(MaterialRequest r) =>
+      [r.make, r.size].where((s) => s.isNotEmpty).join(' · ');
+
+  Widget _attachmentButton(BuildContext context, AppLocalizations l10n, MaterialRequest r) {
+    final count = r.attachments.photos.length + (r.attachments.audio != null ? 1 : 0);
+    return IconButton(
+      tooltip: l10n.attachments,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+      iconSize: 16,
+      icon: Badge(
+        label: Text('$count'),
+        child: const Icon(Icons.attach_file),
+      ),
+      onPressed: () => showDialog<void>(
+        context: context,
+        builder: (_) => RequestAttachmentsDialog(attachments: r.attachments),
+      ),
+    );
+  }
+
   Widget _cards(BuildContext context, AppLocalizations l10n) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final status = context.statusColors;
     return ListView.separated(
       padding: EdgeInsets.zero,
       itemCount: controller.requests.length,
@@ -137,6 +138,8 @@ class RequestsView extends GetView<MaterialRequestsController> {
       itemBuilder: (context, i) {
         final r = controller.requests[i];
         return EntityCard(
+          eyebrow: l10n.colItem,
+          railColor: status.forRequest(r.status).ink,
           title: r.particular,
           trailing: RequestStatusChip(r.status),
           fields: [
@@ -177,12 +180,10 @@ class RequestsView extends GetView<MaterialRequestsController> {
   }
 
   Widget _emptyState(AppLocalizations l10n) {
-    final (IconData icon, String title, String body) = switch (controller.statusFilter.value) {
-      // Review queue empty = the happy path; phrase it positively.
+    final (IconData icon, String title, String body) =
+        switch (controller.statusFilter.value) {
       'requested' => (Icons.inbox_outlined, l10n.caughtUpTitle, l10n.caughtUpBody),
-      // "All" empty = there are genuinely no requests yet (neutral, not a filtered-out look).
       null => (Icons.inbox_outlined, l10n.nothingHereTitle, l10n.noRequestsBody),
-      // A specific status filter matched nothing.
       'accepted' => (Icons.filter_list_off, l10n.nothingHereTitle, l10n.noAcceptedBody),
       'declined' => (Icons.filter_list_off, l10n.nothingHereTitle, l10n.noDeclinedBody),
       _ => (Icons.filter_list_off, l10n.nothingHereTitle, l10n.noCancelledBody),
@@ -192,75 +193,41 @@ class RequestsView extends GetView<MaterialRequestsController> {
 
   Widget _table(BuildContext context, AppLocalizations l10n) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: LayoutBuilder(
-        builder: (context, constraints) => ScrollableTable(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: DataTable(
-            columnSpacing: 24,
-            columns: [
-              DataColumn(label: Text(l10n.colItem)),
-              DataColumn(label: Text(l10n.colMake)),
-              DataColumn(label: Text(l10n.colSize)),
-              DataColumn(label: Text(l10n.colQty)),
-              DataColumn(label: Text(l10n.colClient)),
-              DataColumn(label: Text(l10n.colPo)),
-              DataColumn(label: Text(l10n.colSupervisor)),
-              DataColumn(label: Text(l10n.colSubmitted)),
-              DataColumn(label: Text(l10n.colStatus)),
-              const DataColumn(label: Text('')),
-            ],
-            rows: [
-              for (final r in controller.requests)
-                DataRow(
-                  cells: [
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (r.attachments.isNotEmpty)
-                            IconButton(
-                              tooltip: l10n.attachments,
-                              visualDensity: VisualDensity.compact,
-                              icon: const Icon(Icons.attach_file, size: 18),
-                              onPressed: () => showDialog<void>(
-                                context: context,
-                                builder: (_) => RequestAttachmentsDialog(
-                                  attachments: r.attachments,
-                                ),
-                              ),
-                            ),
-                          _capped(
-                            r.particular,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                    DataCell(_capped(r.make, style: TextStyle(color: muted))),
-                    DataCell(Text(r.size.isEmpty ? '—' : r.size)),
-                    DataCell(Text(l10n.qtyWithUnit(r.quantityLabel, r.unit))),
-                    DataCell(Text(r.clientName ?? '—')),
-                    DataCell(Text(r.poNumber, style: TextStyle(color: muted))),
-                    DataCell(Text(r.supervisorName ?? '—')),
-                    DataCell(Text(formatDate(r.createdAt))),
-                    DataCell(RequestStatusChip(r.status)),
-                    DataCell(_actions(context, l10n, r, muted)),
-                  ],
-                ),
+    final status = context.statusColors;
+    return DcplTable(
+      columns: [
+        DcplColumn(l10n.colItem, flex: 3),
+        DcplColumn(l10n.colQty, fixedWidth: 100),
+        DcplColumn(l10n.colClient, flex: 2),
+        DcplColumn(l10n.colPo, fixedWidth: 96),
+        DcplColumn(l10n.colSupervisor, flex: 2),
+        DcplColumn(l10n.colSubmitted, fixedWidth: 96, numeric: true),
+        DcplColumn(l10n.colStatus, fixedWidth: 168),
+        const DcplColumn('', fixedWidth: 210),
+      ],
+      rows: [
+        for (final r in controller.requests)
+          DcplRow(
+            railColor: status.forRequest(r.status).ink,
+            cells: [
+              Row(
+                children: [
+                  Expanded(child: PrimaryCell(r.particular, subtitle: _itemSubtitle(r))),
+                  if (r.attachments.isNotEmpty) _attachmentButton(context, l10n, r),
+                ],
+              ),
+              Text(l10n.qtyWithUnit(r.quantityLabel, r.unit)),
+              Text(r.clientName ?? '—'),
+              Text(r.poNumber, style: TextStyle(color: muted)),
+              Text(r.supervisorName ?? '—'),
+              Text(formatDate(r.createdAt)),
+              RequestStatusChip(r.status),
+              _actions(context, l10n, r, muted),
             ],
           ),
-        ),
-      ),
+      ],
     );
   }
-
-  Widget _capped(String text, {TextStyle? style}) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 220),
-    child: Text(text, style: style, overflow: TextOverflow.ellipsis),
-  );
 
   Widget _actions(
     BuildContext context,
@@ -270,34 +237,46 @@ class RequestsView extends GetView<MaterialRequestsController> {
   ) {
     if (!r.isPending) {
       final text = switch (r.status) {
-        'accepted' =>
-          (r.vendor != null && r.vendor!.isNotEmpty)
-              ? l10n.vendorArrow(r.vendor!)
-              : l10n.segAccepted,
+        'accepted' => (r.vendor != null && r.vendor!.isNotEmpty)
+            ? l10n.vendorArrow(r.vendor!)
+            : l10n.segAccepted,
         'declined' => l10n.declinedShort,
         _ => l10n.withdrawnShort,
       };
-      return Text(text, style: TextStyle(color: muted));
+      return Text(text, style: TextStyle(color: muted), overflow: TextOverflow.ellipsis);
     }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextButton(
-          onPressed: () => showDialog<void>(
-            context: context,
-            builder: (_) => DeclineRequestDialog(request: r),
+    // Compact buttons, right-aligned; FittedBox guarantees they never overflow
+    // the fixed actions column on tighter widths.
+    const compact = ButtonStyle(
+      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
+      visualDensity: VisualDensity.compact,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextButton(
+            style: compact,
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => DeclineRequestDialog(request: r),
+            ),
+            child: Text(l10n.decline),
           ),
-          child: Text(l10n.decline),
-        ),
-        const SizedBox(width: 8),
-        FilledButton.tonal(
-          onPressed: () => showDialog<void>(
-            context: context,
-            builder: (_) => AcceptRequestDialog(request: r),
+          const SizedBox(width: 6),
+          FilledButton.tonal(
+            style: compact,
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => AcceptRequestDialog(request: r),
+            ),
+            child: Text(l10n.accept),
           ),
-          child: Text(l10n.accept),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -19,6 +19,10 @@ class HomeShell extends StatelessWidget {
 
     return AdaptiveNavScaffold(
       title: l10n.appTitle,
+      leading: const Padding(
+        padding: EdgeInsets.all(14),
+        child: BrandMark(size: 28),
+      ),
       actions: [
         // Email is space-hungry; show it only where there's room (tablet+).
         if (!context.isCompact)

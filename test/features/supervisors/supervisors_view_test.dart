@@ -44,8 +44,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No supervisors yet'), findsOneWidget);
-    // Two CTAs: the header button and the empty-state button.
-    expect(find.widgetWithText(FilledButton, 'New supervisor'), findsNWidgets(2));
+    // Two CTAs: the molten header button and the empty-state button.
+    expect(find.widgetWithText(GradientButton, 'New supervisor'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'New supervisor'), findsOneWidget);
   });
 
   testWidgets('shows the error state then recovers on retry', (tester) async {

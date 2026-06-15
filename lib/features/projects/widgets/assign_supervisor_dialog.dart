@@ -1,5 +1,6 @@
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/projects/projects_controller.dart';
+import 'package:dcpl_admin/features/supervisors/supervisors.dart';
 import 'package:dcpl_shared/models/project.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -27,6 +28,20 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
     // added since is pickable. This is the only caller of loadSupervisors (the projects
     // table itself reads the backend-resolved name off each project). Body is reactive (Obx).
     _controller.loadSupervisors();
+  }
+
+  // Add a supervisor without leaving the assign flow: open the create dialog,
+  // then refresh the picker and pre-select the newly-created supervisor.
+  Future<void> _openCreate() async {
+    final created = await showDialog<Supervisor>(
+      context: context,
+      builder: (_) => const CreateSupervisorDialog(),
+    );
+    if (!mounted) return;
+    await _controller.loadSupervisors();
+    if (created != null && mounted) {
+      setState(() => _selectedUid = created.uid);
+    }
   }
 
   Future<void> _assign() async {
@@ -63,7 +78,18 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
           if (supervisors.isEmpty) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text(l10n.noSupervisorsYet, textAlign: TextAlign.center),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l10n.noSupervisorsYet, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: _submitting ? null : _openCreate,
+                    icon: const Icon(Icons.person_add_alt),
+                    label: Text(l10n.newSupervisor),
+                  ),
+                ],
+              ),
             );
           }
           return Column(
@@ -91,6 +117,15 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
                         ),
                     ],
                   ),
+                ),
+              ),
+              const Divider(height: 1),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _submitting ? null : _openCreate,
+                  icon: const Icon(Icons.person_add_alt, size: 18),
+                  label: Text(l10n.newSupervisor),
                 ),
               ),
             ],

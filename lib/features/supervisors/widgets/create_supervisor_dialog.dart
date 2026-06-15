@@ -53,14 +53,16 @@ class _CreateSupervisorDialogState extends State<CreateSupervisorDialog> {
     });
     final email = _email.text.trim().toLowerCase();
     try {
-      await _controller.create(
+      final created = await _controller.create(
         name: _name.text.trim(),
         email: email,
         phone: _phone.text.trim(),
       );
       if (!mounted) return;
       final message = AppLocalizations.of(context).inviteSent(email);
-      Navigator.of(context).pop();
+      // Return the created supervisor so callers (e.g. the assign dialog) can
+      // refresh and pre-select it; other callers simply ignore the result.
+      Navigator.of(context).pop(created);
       showAppSnackbar(message);
     } on ApiException catch (e) {
       if (!mounted) return;

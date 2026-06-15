@@ -20,6 +20,9 @@ class StatusChip extends StatelessWidget {
       ),
       label: Text(
         isActive ? l10n.active : l10n.completed,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.clip,
         style: TextStyle(color: colors.ink),
       ),
       backgroundColor: colors.surface,

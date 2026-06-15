@@ -14,51 +14,30 @@ class SupervisorsView extends GetView<SupervisorsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              // Title + count share a flexible slot so the title can ellipsize
-              // on narrow widths; the actions then sit flush-right (no Spacer to
-              // fight over slack, so no stray gap).
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(l10n.navSupervisors, style: Theme.of(context).textTheme.headlineSmall, overflow: TextOverflow.ellipsis),
-                    ),
-                    const SizedBox(width: 12),
-                    Obx(
-                      () => Text(
-                        l10n.countSupervisors(controller.supervisors.length),
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Obx(
-                () => RefreshButton(
-                  tooltip: l10n.refresh,
-                  onPressed: controller.fetch,
-                  isRefreshing: controller.isLoading.value && controller.supervisors.isNotEmpty,
-                ),
-              ),
-              const SizedBox(width: 4),
-              // On phones the "+" alone is enough; the label needs room.
-              if (context.isCompact)
-                IconButton.filled(
-                  tooltip: l10n.newSupervisor,
-                  onPressed: () => _openCreate(context),
-                  icon: const Icon(Icons.add),
-                )
-              else
-                FilledButton.icon(
-                  onPressed: () => _openCreate(context),
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.newSupervisor),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          Obx(() => PageHeader(
+                title: l10n.navSupervisors,
+                count: '${controller.supervisors.length}',
+                actions: [
+                  Obx(() => RefreshButton(
+                        tooltip: l10n.refresh,
+                        onPressed: controller.fetch,
+                        isRefreshing: controller.isLoading.value &&
+                            controller.supervisors.isNotEmpty,
+                      )),
+                  context.isCompact
+                      ? IconButton.filled(
+                          tooltip: l10n.newSupervisor,
+                          onPressed: () => _openCreate(context),
+                          icon: const Icon(Icons.add),
+                        )
+                      : GradientButton(
+                          onPressed: () => _openCreate(context),
+                          icon: Icons.add,
+                          label: l10n.newSupervisor,
+                        ),
+                ],
+              )),
+          const SizedBox(height: 24),
           Expanded(child: Obx(() => _body(context, l10n))),
           Obx(() => _loadMoreBar(l10n)),
         ],
@@ -118,34 +97,26 @@ class SupervisorsView extends GetView<SupervisorsController> {
 
   Widget _table(BuildContext context, AppLocalizations l10n) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: LayoutBuilder(
-        builder: (context, constraints) => ScrollableTable(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: DataTable(
-            columnSpacing: 24,
-            columns: [
-              DataColumn(label: Text(l10n.colName)),
-              DataColumn(label: Text(l10n.colEmail)),
-              DataColumn(label: Text(l10n.colPhone)),
-              DataColumn(label: Text(l10n.colProjects)),
-            ],
-            rows: [
-              for (final s in controller.supervisors)
-                DataRow(
-                  cells: [
-                    DataCell(Text(s.name, style: const TextStyle(fontWeight: FontWeight.w500))),
-                    DataCell(Text(s.email)),
-                    DataCell(s.phone == null || s.phone!.isEmpty ? Text('—', style: TextStyle(color: muted)) : Text(s.phone!)),
-                    DataCell(_AssignedProjects(s.projects)),
-                  ],
-                ),
+    return DcplTable(
+      columns: [
+        DcplColumn(l10n.colName, flex: 2),
+        DcplColumn(l10n.colEmail, flex: 3),
+        DcplColumn(l10n.colPhone, fixedWidth: 140),
+        DcplColumn(l10n.colProjects, flex: 3),
+      ],
+      rows: [
+        for (final s in controller.supervisors)
+          DcplRow(
+            cells: [
+              PrimaryCell(s.name),
+              Text(s.email),
+              s.phone == null || s.phone!.isEmpty
+                  ? Text('—', style: TextStyle(color: muted))
+                  : Text(s.phone!),
+              _AssignedProjects(s.projects),
             ],
           ),
-        ),
-      ),
+      ],
     );
   }
 }
