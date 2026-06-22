@@ -8,153 +8,174 @@ class ProjectsView extends GetView<ProjectsController> {
   const ProjectsView({super.key});
 
   @override
+  Widget build(BuildContext context) => Padding(
+    padding: context.pagePadding,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _Header(),
+        const SizedBox(height: 24),
+        const Expanded(child: _Body()),
+        LoadMoreBar(
+          controller: controller,
+          label: AppLocalizations.of(context).loadMore,
+        ),
+      ],
+    ),
+  );
+}
+
+class _Header extends GetView<ProjectsController> {
+  const _Header();
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: context.pagePadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Obx(() => PageHeader(
-                title: l10n.navProjects,
-                count: '${controller.projects.length}',
-                actions: [
-                  Obx(() => RefreshButton(
-                        tooltip: l10n.refresh,
-                        onPressed: controller.fetch,
-                        isRefreshing: controller.isLoading.value &&
-                            controller.projects.isNotEmpty,
-                      )),
-                  _createAction(context, l10n),
-                ],
-              )),
-          const SizedBox(height: 24),
-          Expanded(child: Obx(() => _body(context, l10n))),
-          Obx(() => _loadMoreBar(l10n)),
+    return Obx(
+      () => PageHeader(
+        title: l10n.navProjects,
+        count: '${controller.projects.length}',
+        actions: [
+          RefreshButton(
+            tooltip: l10n.refresh,
+            onPressed: controller.fetch,
+            isRefreshing:
+                controller.isLoading.value && controller.projects.isNotEmpty,
+          ),
+          const _CreateAction(),
         ],
       ),
     );
   }
+}
 
-  void _openCreate(BuildContext context) => showDialog(
-        context: context,
-        builder: (_) => const CreateProjectDialog(),
-      );
+/// Primary action: a full molten button on wide layouts, a compact "+" on phones.
+class _CreateAction extends StatelessWidget {
+  const _CreateAction();
 
-  // Primary action: a full molten button on wide layouts, a compact "+" on phones.
-  Widget _createAction(BuildContext context, AppLocalizations l10n) =>
-      context.isCompact
-          ? IconButton.filled(
-              tooltip: l10n.newProject,
-              onPressed: () => _openCreate(context),
-              icon: const Icon(Icons.add),
-            )
-          : GradientButton(
-              onPressed: () => _openCreate(context),
-              icon: Icons.add,
-              label: l10n.newProject,
-            );
-
-  Widget _loadMoreBar(AppLocalizations l10n) {
-    if (!controller.hasMore) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Center(
-        child: controller.isLoadingMore.value
-            ? const SizedBox(
-                height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))
-            : OutlinedButton.icon(
-                onPressed: controller.loadMore,
-                icon: const Icon(Icons.expand_more),
-                label: Text(l10n.loadMore),
-              ),
-      ),
-    );
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return context.isCompact
+        ? IconButton.filled(
+            tooltip: l10n.newProject,
+            onPressed: () => _openCreate(context),
+            icon: const Icon(Icons.add),
+          )
+        : GradientButton(
+            onPressed: () => _openCreate(context),
+            icon: Icons.add,
+            label: l10n.newProject,
+          );
   }
+}
 
-  Widget _body(BuildContext context, AppLocalizations l10n) {
-    if (controller.isLoading.value && controller.projects.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (controller.error.value != null) {
-      return ErrorState(
-        title: l10n.couldntLoadProjects,
-        message: controller.error.value!,
-        onRetry: controller.fetch,
-      );
-    }
-    if (controller.projects.isEmpty) {
-      return EmptyState(
-        icon: Icons.folder_open,
-        title: l10n.noProjectsTitle,
-        body: l10n.noProjectsBody,
-        action: FilledButton.icon(
-          onPressed: () => _openCreate(context),
-          icon: const Icon(Icons.add),
-          label: Text(l10n.newProject),
-        ),
-      );
-    }
-    return context.isCompact ? _cards(context, l10n) : _table(context, l10n);
+void _openCreate(BuildContext context) =>
+    showDialog(context: context, builder: (_) => const CreateProjectDialog());
+
+void _openDetail(BuildContext context, String id) => showDialog(
+  context: context,
+  builder: (_) => ProjectDetailDialog(projectId: id),
+);
+
+class _Body extends GetView<ProjectsController> {
+  const _Body();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Obx(() {
+      if (controller.isLoading.value && controller.projects.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (controller.error.value != null) {
+        return ErrorState(
+          title: l10n.couldntLoadProjects,
+          message: controller.error.value!,
+          onRetry: controller.fetch,
+        );
+      }
+      if (controller.projects.isEmpty) {
+        return EmptyState(
+          icon: Icons.folder_open,
+          title: l10n.noProjectsTitle,
+          body: l10n.noProjectsBody,
+          action: FilledButton.icon(
+            onPressed: () => _openCreate(context),
+            icon: const Icon(Icons.add),
+            label: Text(l10n.newProject),
+          ),
+        );
+      }
+      final projects = controller.projects.toList();
+      return context.isCompact ? _Cards(projects) : _Table(projects);
+    });
   }
+}
 
-  Widget _cards(BuildContext context, AppLocalizations l10n) {
+class _Cards extends StatelessWidget {
+  const _Cards(this.projects);
+
+  final List<Project> projects;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final status = context.statusColors;
     return ListView.separated(
       padding: EdgeInsets.zero,
-      itemCount: controller.projects.length,
+      itemCount: projects.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, i) {
-        final p = controller.projects[i];
+        final p = projects[i];
         return EntityCard(
           eyebrow: l10n.colProject,
-          railColor: status.forProject(p.status).ink,
-          title: p.particular,
+          railColor: status.forProject(p.status.wire).ink,
+          title: p.name,
           trailing: StatusChip(p.status),
-          onTap: () => showDialog(
-            context: context,
-            builder: (_) => ProjectDetailDialog(projectId: p.id),
-          ),
+          onTap: () => _openDetail(context, p.id),
           fields: [
+            EntityField(l10n.colNumber, text: p.number, muted: true),
             EntityField(l10n.colClient, text: p.clientName),
-            EntityField(l10n.colPo, text: p.po, muted: true),
-            EntityField(l10n.colDate, text: formatDate(p.date)),
-            EntityField(
-              l10n.colSupervisor,
-              child: AssigneePellet(name: p.supervisorName, fallback: l10n.unassigned),
-            ),
+            EntityField(l10n.colEngineer, text: p.projectEngineer),
+            EntityField(l10n.colWorkOrders, text: '${p.workOrderCount ?? 0}'),
           ],
         );
       },
     );
   }
+}
 
-  Widget _table(BuildContext context, AppLocalizations l10n) {
+class _Table extends StatelessWidget {
+  const _Table(this.projects);
+
+  final List<Project> projects;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final status = context.statusColors;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return DcplTable(
-      trailing: true,
       columns: [
         DcplColumn(l10n.colProject, flex: 3),
+        DcplColumn(l10n.colNumber, fixedWidth: 128),
         DcplColumn(l10n.colClient, flex: 2),
-        DcplColumn(l10n.colPo, fixedWidth: 112, numeric: true),
-        DcplColumn(l10n.colDate, fixedWidth: 96, numeric: true),
-        DcplColumn(l10n.colSupervisor, flex: 2),
+        DcplColumn(l10n.colEngineer, flex: 2),
+        DcplColumn(l10n.colWorkOrders, fixedWidth: 110, numeric: true),
         DcplColumn(l10n.colStatus, fixedWidth: 160),
       ],
       rows: [
-        for (final p in controller.projects)
+        for (final p in projects)
           DcplRow(
-            railColor: status.forProject(p.status).ink,
-            onTap: () => showDialog(
-              context: context,
-              builder: (_) => ProjectDetailDialog(projectId: p.id),
-            ),
+            railColor: status.forProject(p.status.wire).ink,
+            onTap: () => _openDetail(context, p.id),
             cells: [
-              PrimaryCell(p.particular),
+              PrimaryCell(p.name),
+              Text(p.number, style: TextStyle(color: muted)),
               Text(p.clientName),
-              Text(p.po, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-              Text(formatDate(p.date)),
-              AssigneePellet(name: p.supervisorName, fallback: l10n.unassigned),
+              Text(p.projectEngineer),
+              Text('${p.workOrderCount ?? 0}'),
               StatusChip(p.status),
             ],
           ),

@@ -14,7 +14,7 @@ void main() {
     name: 'Ravi',
     email: 'ravi@dcpl.test',
     phone: '9876543210',
-    projects: ['Lobby'],
+    workOrders: ['Lobby'],
   );
 
   setUp(() {
@@ -23,8 +23,9 @@ void main() {
   });
 
   test('fetch() populates supervisors and cursor on success', () async {
-    when(() => repo.list(cursor: any(named: 'cursor')))
-        .thenAnswer((_) async => (items: [supervisor], nextCursor: 'c1'));
+    when(() => repo.list(cursor: any(named: 'cursor'))).thenAnswer(
+      (_) async => const Page(items: [supervisor], nextCursor: 'c1'),
+    );
     await controller.fetch();
     expect(controller.supervisors, [supervisor]);
     expect(controller.hasMore, isTrue);
@@ -33,7 +34,9 @@ void main() {
   });
 
   test('fetch() sets error message on ApiException', () async {
-    when(() => repo.list(cursor: any(named: 'cursor'))).thenThrow(ApiException(500, 'boom'));
+    when(
+      () => repo.list(cursor: any(named: 'cursor')),
+    ).thenThrow(ApiException(500, 'boom'));
     await controller.fetch();
     expect(controller.error.value, 'boom');
     expect(controller.supervisors, isEmpty);
@@ -46,12 +49,14 @@ void main() {
       name: 'Asha',
       email: 'asha@dcpl.test',
       phone: null,
-      projects: [],
+      workOrders: [],
     );
-    when(() => repo.list(cursor: null))
-        .thenAnswer((_) async => (items: [supervisor], nextCursor: 'c1'));
-    when(() => repo.list(cursor: 'c1'))
-        .thenAnswer((_) async => (items: [s2], nextCursor: null));
+    when(() => repo.list(cursor: null)).thenAnswer(
+      (_) async => const Page(items: [supervisor], nextCursor: 'c1'),
+    );
+    when(
+      () => repo.list(cursor: 'c1'),
+    ).thenAnswer((_) async => const Page(items: [s2], nextCursor: null));
     await controller.fetch();
     await controller.loadMore();
     expect(controller.supervisors, [supervisor, s2]);
@@ -59,11 +64,13 @@ void main() {
   });
 
   test('create() prepends the new supervisor and returns it', () async {
-    when(() => repo.create(
-          name: any(named: 'name'),
-          email: any(named: 'email'),
-          phone: any(named: 'phone'),
-        )).thenAnswer((_) async => supervisor);
+    when(
+      () => repo.create(
+        name: any(named: 'name'),
+        email: any(named: 'email'),
+        phone: any(named: 'phone'),
+      ),
+    ).thenAnswer((_) async => supervisor);
     final created = await controller.create(
       name: 'Ravi',
       email: 'ravi@dcpl.test',
@@ -74,11 +81,13 @@ void main() {
   });
 
   test('create() propagates ApiException (dialog surfaces it)', () async {
-    when(() => repo.create(
-          name: any(named: 'name'),
-          email: any(named: 'email'),
-          phone: any(named: 'phone'),
-        )).thenThrow(ApiException(409, 'A user with this email already exists'));
+    when(
+      () => repo.create(
+        name: any(named: 'name'),
+        email: any(named: 'email'),
+        phone: any(named: 'phone'),
+      ),
+    ).thenThrow(ApiException(409, 'A user with this email already exists'));
     expect(
       () => controller.create(name: 'Ravi', email: 'ravi@dcpl.test'),
       throwsA(isA<ApiException>()),

@@ -78,7 +78,9 @@ class _CreateSupervisorDialogState extends State<CreateSupervisorDialog> {
         setState(() => _error = e.message);
       }
     } catch (_) {
-      if (mounted) setState(() => _error = 'Couldn\'t send the invite. Please try again.');
+      if (mounted) {
+        setState(() => _error = 'Couldn\'t send the invite. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -100,8 +102,8 @@ class _CreateSupervisorDialogState extends State<CreateSupervisorDialog> {
               Text(
                 l10n.supervisorInviteHint,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 16),
               if (_error != null) ...[
@@ -113,7 +115,8 @@ class _CreateSupervisorDialogState extends State<CreateSupervisorDialog> {
                 autofocus: true,
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(labelText: l10n.nameLabel),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter a name' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Enter a name' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -150,11 +153,13 @@ class _CreateSupervisorDialogState extends State<CreateSupervisorDialog> {
           onPressed: _submitting ? null : _submit,
           child: _submitting
               ? const SizedBox(
-                  height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : Text(l10n.sendInvite),
         ),
       ],
     );
   }
 }
-

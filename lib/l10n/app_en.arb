@@ -36,13 +36,21 @@
   "@navRequests": {
     "description": "Navigation rail label for the Requests tab."
   },
+  "navWorkOrders": "Work Orders",
+  "@navWorkOrders": {
+    "description": "Navigation rail label for the Work Orders tab."
+  },
+  "navSectionWorkspace": "Workspace",
+  "@navSectionWorkspace": {
+    "description": "Navigation rail section header grouping Projects, Work Orders, Supervisors."
+  },
+  "navSectionInbox": "Inbox",
+  "@navSectionInbox": {
+    "description": "Navigation rail section header grouping the Requests tab."
+  },
   "cancel": "Cancel",
   "@cancel": {
     "description": "Generic dialog cancel button."
-  },
-  "retry": "Retry",
-  "@retry": {
-    "description": "Retry button on error states."
   },
   "refresh": "Refresh",
   "@refresh": {
@@ -64,31 +72,13 @@
   "@newProject": {
     "description": "Button that opens the create-project dialog."
   },
-  "countProjects": "{count, plural, =1{1 project} other{{count} projects}}",
-  "@countProjects": {
-    "description": "Header count next to the Projects title.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "5"
-      }
-    }
-  },
   "colProject": "Project",
   "@colProject": {
     "description": "Projects table column header: project name."
   },
-  "colProjects": "Projects",
-  "@colProjects": {
-    "description": "Supervisors table column header: the projects assigned to a supervisor."
-  },
   "colClient": "Client",
   "@colClient": {
     "description": "Table column header: client name."
-  },
-  "colPo": "PO Number",
-  "@colPo": {
-    "description": "Table column header: purchase-order number."
   },
   "colDate": "Date",
   "@colDate": {
@@ -122,13 +112,9 @@
   "@clientNameLabel": {
     "description": "Create-project form: client name field."
   },
-  "projectDateLabel": "Project date",
-  "@projectDateLabel": {
-    "description": "Create-project form: date field."
-  },
-  "createProjectHint": "A PO number is generated automatically when you create the project.",
+  "createProjectHint": "Add at least one work order. Project and work-order numbers are generated automatically.",
   "@createProjectHint": {
-    "description": "Hint under the create-project form about PO generation."
+    "description": "Hint under the create-project form about work orders and auto-numbering."
   },
   "createProject": "Create project",
   "@createProject": {
@@ -143,10 +129,6 @@
         "example": "PO_26-27_06/0001"
       }
     }
-  },
-  "assignSupervisor": "Assign supervisor",
-  "@assignSupervisor": {
-    "description": "Button to assign a supervisor to a project."
   },
   "changeSupervisor": "Change",
   "@changeSupervisor": {
@@ -172,16 +154,6 @@
   "@newSupervisor": {
     "description": "Button that opens the create-supervisor dialog."
   },
-  "countSupervisors": "{count, plural, =1{1 supervisor} other{{count} supervisors}}",
-  "@countSupervisors": {
-    "description": "Header count next to the Supervisors title.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "5"
-      }
-    }
-  },
   "colName": "Name",
   "@colName": {
     "description": "Supervisors table column header: name."
@@ -198,7 +170,7 @@
   "@noSupervisorsTitle": {
     "description": "Empty-state title on the Supervisors screen."
   },
-  "noSupervisorsBody": "Add a supervisor to invite them by email and assign them to projects.",
+  "noSupervisorsBody": "Add a supervisor to invite them by email and assign them to work orders.",
   "@noSupervisorsBody": {
     "description": "Empty-state body on the Supervisors screen."
   },
@@ -286,65 +258,9 @@
       }
     }
   },
-  "segToReview": "To review",
-  "@segToReview": {
-    "description": "Requests filter segment: requested items to review."
-  },
-  "segAccepted": "Accepted",
-  "@segAccepted": {
-    "description": "Requests filter segment: accepted."
-  },
-  "segDeclined": "Declined",
-  "@segDeclined": {
-    "description": "Requests filter segment: declined."
-  },
-  "segCancelled": "Cancelled",
-  "@segCancelled": {
-    "description": "Requests filter segment: cancelled."
-  },
   "segAll": "All",
   "@segAll": {
     "description": "Requests filter segment: all statuses."
-  },
-  "countToReview": "{count, plural, =0{None to review} =1{1 to review} other{{count} to review}}",
-  "@countToReview": {
-    "description": "Count for the 'To review' (requested) filter.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "5"
-      }
-    }
-  },
-  "countAccepted": "{count, plural, =1{1 accepted} other{{count} accepted}}",
-  "@countAccepted": {
-    "description": "Count for the Accepted filter.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "12"
-      }
-    }
-  },
-  "countDeclined": "{count, plural, =1{1 declined} other{{count} declined}}",
-  "@countDeclined": {
-    "description": "Count for the Declined filter.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "3"
-      }
-    }
-  },
-  "countCancelled": "{count, plural, =1{1 cancelled} other{{count} cancelled}}",
-  "@countCancelled": {
-    "description": "Count for the Cancelled filter.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "2"
-      }
-    }
   },
   "countRequests": "{count, plural, =1{1 request} other{{count} requests}}",
   "@countRequests": {
@@ -356,29 +272,9 @@
       }
     }
   },
-  "caughtUpTitle": "You're all caught up",
-  "@caughtUpTitle": {
-    "description": "Positive empty-state title when the review queue is clear."
-  },
-  "caughtUpBody": "No material requests are waiting for review.",
-  "@caughtUpBody": {
-    "description": "Empty-state body when the review queue is clear."
-  },
   "nothingHereTitle": "Nothing here",
   "@nothingHereTitle": {
     "description": "Empty-state title for non-review filters with no rows."
-  },
-  "noAcceptedBody": "No accepted requests yet.",
-  "@noAcceptedBody": {
-    "description": "Empty-state body for the Accepted filter."
-  },
-  "noDeclinedBody": "No declined requests.",
-  "@noDeclinedBody": {
-    "description": "Empty-state body for the Declined filter."
-  },
-  "noCancelledBody": "No cancelled requests.",
-  "@noCancelledBody": {
-    "description": "Empty-state body for the Cancelled filter."
   },
   "noRequestsBody": "No material requests yet.",
   "@noRequestsBody": {
@@ -466,10 +362,6 @@
   "@declineConfirmBody": {
     "description": "Confirming line in the decline dialog."
   },
-  "reasonOptionalLabel": "Reason (optional)",
-  "@reasonOptionalLabel": {
-    "description": "Decline dialog: optional reason field."
-  },
   "declineReasonHelper": "Let the supervisor know why.",
   "@declineReasonHelper": {
     "description": "Helper under the reason field in the decline dialog."
@@ -501,5 +393,195 @@
   "close": "Close",
   "@close": {
     "description": "Generic close button (e.g. the attachments dialog)."
+  },
+  "projectEngineerLabel": "Project engineer",
+  "@projectEngineerLabel": {
+    "description": "Create-project form: project engineer field."
+  },
+  "workOrdersSection": "Work orders",
+  "@workOrdersSection": {
+    "description": "Section heading for the work-order rows in create/detail dialogs."
+  },
+  "workOrderN": "Work order {n}",
+  "@workOrderN": {
+    "description": "Label above each inline work-order row in the create dialog.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "workOrderNameLabel": "Work-order name",
+  "@workOrderNameLabel": {
+    "description": "Create-project form: a work-order's name field."
+  },
+  "workOrderDateLabel": "Date",
+  "@workOrderDateLabel": {
+    "description": "Create-project form: a work-order's date field."
+  },
+  "descriptionOptionalLabel": "Description (optional)",
+  "@descriptionOptionalLabel": {
+    "description": "Create-project form: a work-order's optional description field."
+  },
+  "addWorkOrder": "Add work order",
+  "@addWorkOrder": {
+    "description": "Button to append another inline work-order row."
+  },
+  "removeWorkOrder": "Remove work order",
+  "@removeWorkOrder": {
+    "description": "Tooltip on the remove-row button for a work order."
+  },
+  "noWorkOrdersYet": "No work orders yet.",
+  "@noWorkOrdersYet": {
+    "description": "Shown in the project detail when a project has no work orders."
+  },
+  "completeProject": "Complete project",
+  "@completeProject": {
+    "description": "Button to mark a project completed in the detail dialog."
+  },
+  "projectCompleted": "Project completed",
+  "@projectCompleted": {
+    "description": "Snackbar after completing a project."
+  },
+  "colNumber": "Number",
+  "@colNumber": {
+    "description": "Table column header: the system-generated number."
+  },
+  "colEngineer": "Engineer",
+  "@colEngineer": {
+    "description": "Projects table column header: project engineer."
+  },
+  "colWorkOrders": "Work orders",
+  "@colWorkOrders": {
+    "description": "Table column header: work orders (count, or assigned list)."
+  },
+  "allStatuses": "All statuses",
+  "@allStatuses": {
+    "description": "Requests status filter: all statuses."
+  },
+  "allProjects": "All projects",
+  "@allProjects": {
+    "description": "Filter dropdown option: all projects."
+  },
+  "allWorkOrders": "All work orders",
+  "@allWorkOrders": {
+    "description": "Filter dropdown option: all work orders."
+  },
+  "woPending": "Pending",
+  "@woPending": {
+    "description": "Work-order status: pending (unassigned)."
+  },
+  "woActive": "Active",
+  "@woActive": {
+    "description": "Work-order status: active (assigned)."
+  },
+  "woCancelled": "Cancelled",
+  "@woCancelled": {
+    "description": "Work-order status: cancelled."
+  },
+  "couldntLoadWorkOrders": "Couldn't load work orders",
+  "@couldntLoadWorkOrders": {
+    "description": "Error-state title on the Work Orders screen."
+  },
+  "noWorkOrdersTitle": "No work orders",
+  "@noWorkOrdersTitle": {
+    "description": "Empty-state title on the Work Orders screen."
+  },
+  "noWorkOrdersBody": "Work orders appear here once a project is created with them.",
+  "@noWorkOrdersBody": {
+    "description": "Empty-state body on the Work Orders screen."
+  },
+  "markComplete": "Mark complete",
+  "@markComplete": {
+    "description": "Action to mark a work order completed."
+  },
+  "completeWorkOrderTitle": "Mark complete?",
+  "@completeWorkOrderTitle": {
+    "description": "Confirm dialog title for completing a work order."
+  },
+  "completeWorkOrderBody": "Mark this work order as completed. This can't be undone.",
+  "@completeWorkOrderBody": {
+    "description": "Confirm dialog body for completing a work order."
+  },
+  "workOrderCompleted": "Work order completed",
+  "@workOrderCompleted": {
+    "description": "Snackbar after completing a work order."
+  },
+  "cancelWorkOrder": "Cancel work order",
+  "@cancelWorkOrder": {
+    "description": "Action to cancel an unassigned work order."
+  },
+  "cancelWorkOrderTitle": "Cancel work order?",
+  "@cancelWorkOrderTitle": {
+    "description": "Confirm dialog title for cancelling a work order."
+  },
+  "cancelWorkOrderBody": "This cancels the work order. This can't be undone.",
+  "@cancelWorkOrderBody": {
+    "description": "Confirm dialog body for cancelling a work order."
+  },
+  "workOrderCancelled": "Work order cancelled",
+  "@workOrderCancelled": {
+    "description": "Snackbar after cancelling a work order."
+  },
+  "unassign": "Unassign",
+  "@unassign": {
+    "description": "Action to remove a supervisor from a work order."
+  },
+  "unassignTitle": "Unassign supervisor?",
+  "@unassignTitle": {
+    "description": "Confirm dialog title for unassigning a supervisor."
+  },
+  "unassignBody": "This removes the supervisor from the work order.",
+  "@unassignBody": {
+    "description": "Confirm dialog body for unassigning a supervisor."
+  },
+  "workOrderUnassigned": "Supervisor unassigned",
+  "@workOrderUnassigned": {
+    "description": "Snackbar after unassigning a supervisor."
+  },
+  "statusProcessing": "Processing",
+  "@statusProcessing": {
+    "description": "Request status chip: processing (accepted, vendor not yet assigned)."
+  },
+  "statusClosed": "Closed",
+  "@statusClosed": {
+    "description": "Request status chip: closed."
+  },
+  "statusReturned": "Returned",
+  "@statusReturned": {
+    "description": "Request status chip: returned."
+  },
+  "statusSuperseded": "Superseded",
+  "@statusSuperseded": {
+    "description": "Request status chip: superseded."
+  },
+  "acceptToProcessingBody": "This approves the request. You can assign a vendor next.",
+  "@acceptToProcessingBody": {
+    "description": "Body of the accept dialog (step 1: requested → processing)."
+  },
+  "assignVendor": "Assign vendor",
+  "@assignVendor": {
+    "description": "Row action / dialog title: assign the vendor to a processing item."
+  },
+  "assignVendorTitle": "Assign vendor",
+  "@assignVendorTitle": {
+    "description": "Assign-vendor dialog title."
+  },
+  "assignVendorButton": "Assign vendor",
+  "@assignVendorButton": {
+    "description": "Assign-vendor dialog submit button."
+  },
+  "vendorAssigned": "Vendor assigned",
+  "@vendorAssigned": {
+    "description": "Snackbar after assigning a vendor."
+  },
+  "poNumberOptionalLabel": "PO number (optional)",
+  "@poNumberOptionalLabel": {
+    "description": "Assign-vendor dialog: optional PO number field."
+  },
+  "reasonLabel": "Reason",
+  "@reasonLabel": {
+    "description": "Decline dialog: required reason field."
   }
 }

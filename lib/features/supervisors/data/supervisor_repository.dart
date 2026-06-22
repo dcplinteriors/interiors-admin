@@ -1,13 +1,10 @@
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/supervisors/data/supervisor.dart';
 
-/// One page of supervisors plus the cursor for the next page (null = last page).
-typedef SupervisorPage = ({List<Supervisor> items, String? nextCursor});
-
 abstract class SupervisorRepository {
   /// Lists supervisors (cursor-paginated), continuing after [cursor] (null = first page).
   /// Drives the table.
-  Future<SupervisorPage> list({String? cursor});
+  Future<Page<Supervisor>> list({String? cursor});
 
   /// Every supervisor (pages through `list`). For the assign picker, which needs the full set.
   Future<List<Supervisor>> listAll();
@@ -22,18 +19,15 @@ abstract class SupervisorRepository {
 class ApiSupervisorRepository implements SupervisorRepository {
   ApiSupervisorRepository(this._api);
 
-  final ApiClient _api;
+  final DcplApi _api;
 
   @override
-  Future<SupervisorPage> list({String? cursor}) async {
-    final data = await _api.get(
-      '/supervisors',
-      query: {'cursor': ?cursor},
-    ) as Map<String, dynamic>;
-    final items = (data['items'] as List)
-        .map((e) => Supervisor.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return (items: items, nextCursor: data['nextCursor'] as String?);
+  Future<Page<Supervisor>> list({String? cursor}) async {
+    final page = await _api.supervisors.list(cursor: cursor);
+    return Page(
+      items: page.items.map(Supervisor.fromUser).toList(),
+      nextCursor: page.nextCursor,
+    );
   }
 
   @override
@@ -54,12 +48,11 @@ class ApiSupervisorRepository implements SupervisorRepository {
     required String email,
     String? phone,
   }) async {
-    final data = await _api.post('/supervisors', body: {
-      'name': name,
-      'email': email,
-      // Omit phone when empty — the backend treats it as optional, not nullable.
-      if (phone != null && phone.isNotEmpty) 'phone': phone,
-    });
-    return Supervisor.fromJson(data as Map<String, dynamic>);
+    final user = await _api.supervisors.create(
+      name: name,
+      email: email,
+      phone: phone,
+    );
+    return Supervisor.fromUser(user);
   }
 }

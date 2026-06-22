@@ -1,100 +1,131 @@
+import 'dart:async';
+
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/material_requests/data/material_request_repository.dart';
-import 'package:dcpl_shared/models/material_request.dart';
+import 'package:dcpl_admin/features/material_requests/requests_badge_controller.dart';
+import 'package:dcpl_admin/features/projects/data/project_repository.dart';
+import 'package:dcpl_admin/features/work_orders/data/work_order_repository.dart';
+import 'package:dcpl_shared/models/models.dart';
 import 'package:get/get.dart';
 
-class MaterialRequestsController extends GetxController {
-  MaterialRequestsController(this._repo);
+class MaterialRequestsController extends PaginatedController<MaterialRequest> {
+  MaterialRequestsController(
+    this._repo,
+    this._projectRepo,
+    this._workOrderRepo,
+  );
 
   final MaterialRequestRepository _repo;
+  final ProjectRepository _projectRepo;
+  final WorkOrderRepository _workOrderRepo;
 
   final requests = <MaterialRequest>[].obs;
-  final isLoading = false.obs;
-  final isLoadingMore = false.obs;
-  final error = RxnString();
 
-  /// The active status filter; null means "all" (the default tab).
-  final statusFilter = RxnString();
+  /// Filters. `statusFilter` null = all; `projectFilter`/`workOrderFilter` are ids.
+  final statusFilter = Rxn<MaterialRequestStatus>();
+  final projectFilter = RxnString();
+  final workOrderFilter = RxnString();
 
-  /// Cursor for the next page, or null when the loaded list is complete.
-  final _nextCursor = RxnString();
-  bool get hasMore => _nextCursor.value != null;
+  /// Filter-dropdown options. Work orders cascade from the selected project.
+  final projects = <Project>[].obs;
+  final workOrders = <WorkOrder>[].obs;
 
-  /// Bumped on every `fetch()` (a new filter / first page). A `loadMore()` captures the
-  /// current value and discards its result if a fetch superseded it meanwhile.
-  int _generation = 0;
+  @override
+  RxList<MaterialRequest> get items => requests;
+
+  @override
+  Future<Page<MaterialRequest>> fetchPage({String? cursor}) => _repo.list(
+    status: statusFilter.value,
+    project: projectFilter.value,
+    workOrder: workOrderFilter.value,
+    cursor: cursor,
+  );
 
   @override
   void onInit() {
     super.onInit();
-    fetch();
+    loadProjects();
   }
 
-  /// Loads the first page for the active filter, replacing the list.
-  Future<void> fetch() async {
-    final gen = ++_generation;
-    isLoading.value = true;
-    error.value = null;
-    try {
-      // Each request carries its clientName + supervisorName, resolved by the backend.
-      final page = await _repo.list(status: statusFilter.value);
-      if (gen != _generation) return; // superseded by a newer fetch
-      requests.value = page.items;
-      _nextCursor.value = page.nextCursor;
-    } on ApiException catch (e) {
-      if (gen == _generation) error.value = e.message;
-    } finally {
-      if (gen == _generation) isLoading.value = false;
-    }
-  }
-
-  /// Appends the next page. No-op if already loading or there's nothing more.
-  Future<void> loadMore() async {
-    if (isLoadingMore.value || _nextCursor.value == null) return;
-    final gen = _generation; // a fetch() (filter change) would bump this and invalidate us
-    isLoadingMore.value = true;
-    try {
-      final page = await _repo.list(status: statusFilter.value, cursor: _nextCursor.value);
-      if (gen != _generation) return; // a filter change superseded this load
-      requests.addAll(page.items);
-      _nextCursor.value = page.nextCursor;
-    } on ApiException catch (e) {
-      if (gen == _generation) error.value = e.message;
-    } finally {
-      isLoadingMore.value = false;
-    }
-  }
-
-  Future<void> setFilter(String? status) async {
+  Future<void> setStatusFilter(MaterialRequestStatus? status) async {
     if (statusFilter.value == status) return;
     statusFilter.value = status;
     await fetch();
   }
 
-  Future<MaterialRequest> accept(
+  /// Selecting a project narrows the work-order filter to that project; clearing it
+  /// resets the work-order filter + options.
+  Future<void> setProjectFilter(String? projectId) async {
+    if (projectFilter.value == projectId) return;
+    projectFilter.value = projectId;
+    workOrderFilter.value = null;
+    workOrders.clear();
+    if (projectId != null) unawaited(loadWorkOrders(projectId));
+    await fetch();
+  }
+
+  Future<void> setWorkOrderFilter(String? workOrderId) async {
+    if (workOrderFilter.value == workOrderId) return;
+    workOrderFilter.value = workOrderId;
+    await fetch();
+  }
+
+  Future<void> loadProjects() async {
+    try {
+      projects.value = await _projectRepo.listAll();
+    } on ApiException catch (_) {
+      // Filter simply shows no project options.
+    }
+  }
+
+  Future<void> loadWorkOrders(String projectId) async {
+    try {
+      workOrders.value = await _workOrderRepo.listAllForProject(projectId);
+    } on ApiException catch (_) {
+      // Cascade simply shows no work-order options.
+    }
+  }
+
+  /// Step 1 of fulfilment: approve a `requested` item into `processing`.
+  Future<MaterialRequest> acceptToProcessing(
     String id, {
-    required String expectedDate,
-    required String vendor,
     String? remarks,
   }) async {
-    final updated = await _repo.accept(
-      id,
-      expectedDate: expectedDate,
-      vendor: vendor,
-      remarks: remarks,
-    );
+    final updated = await _repo.accept(id, remarks: remarks);
     _applyDecision(updated);
+    _notifyActionableQueueChanged(); // requested → processing (still actionable)
     return updated;
   }
 
-  Future<MaterialRequest> decline(String id, {String? remarks}) async {
-    final updated = await _repo.decline(id, remarks: remarks);
+  /// Step 2: assign the vendor to a `processing` item (→ `accepted`).
+  Future<MaterialRequest> assignVendor(
+    String id, {
+    required String expectedDate,
+    required String vendor,
+    String? poNumber,
+    String? remarks,
+  }) async {
+    final updated = await _repo.assignVendor(
+      id,
+      expectedDate: expectedDate,
+      vendor: vendor,
+      poNumber: poNumber,
+      remarks: remarks,
+    );
     _applyDecision(updated);
+    _notifyActionableQueueChanged(); // processing → accepted (left the queue)
+    return updated;
+  }
+
+  Future<MaterialRequest> decline(String id, String reason) async {
+    final updated = await _repo.decline(id, reason);
+    _applyDecision(updated);
+    _notifyActionableQueueChanged(); // left the requested queue
     return updated;
   }
 
   /// After a decision the row's status changes: drop it from view when it no longer
-  /// matches the active filter (e.g. accepted while viewing "To review"), else update it.
+  /// matches the active status filter (e.g. processing while viewing "requested"), else update.
   void _applyDecision(MaterialRequest updated) {
     final i = requests.indexWhere((r) => r.id == updated.id);
     if (i == -1) return;
@@ -103,6 +134,15 @@ class MaterialRequestsController extends GetxController {
       requests.removeAt(i);
     } else {
       requests[i] = updated;
+    }
+  }
+
+  /// Asks the (permanent) badge controller to re-pull the server-side actionable count
+  /// (requested + processing) after an admin decision changes it. No-op in tests where the
+  /// badge controller isn't registered.
+  void _notifyActionableQueueChanged() {
+    if (Get.isRegistered<RequestsBadgeController>()) {
+      Get.find<RequestsBadgeController>().refreshCount();
     }
   }
 }

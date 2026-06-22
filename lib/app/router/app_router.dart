@@ -19,10 +19,7 @@ class AppRouter {
       return null;
     },
     routes: [
-      GoRoute(
-        path: AppRoutes.login,
-        builder: (_, _) => const LoginView(),
-      ),
+      GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginView()),
       // Persistent shell (rail) with each section as a state-preserving branch.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -32,7 +29,17 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.projects,
-                pageBuilder: (_, _) => const NoTransitionPage(child: ProjectsView()),
+                pageBuilder: (_, _) =>
+                    const NoTransitionPage(child: ProjectsView()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.workOrders,
+                pageBuilder: (_, _) =>
+                    const NoTransitionPage(child: WorkOrdersView()),
               ),
             ],
           ),
@@ -40,7 +47,8 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.supervisors,
-                pageBuilder: (_, _) => const NoTransitionPage(child: SupervisorsView()),
+                pageBuilder: (_, _) =>
+                    const NoTransitionPage(child: SupervisorsView()),
               ),
             ],
           ),
@@ -48,7 +56,8 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.requests,
-                pageBuilder: (_, _) => const NoTransitionPage(child: RequestsView()),
+                pageBuilder: (_, _) =>
+                    const NoTransitionPage(child: RequestsView()),
               ),
             ],
           ),

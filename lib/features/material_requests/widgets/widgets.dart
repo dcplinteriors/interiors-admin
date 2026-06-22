@@ -2,6 +2,7 @@
 library;
 
 export 'accept_request_dialog.dart';
+export 'assign_vendor_dialog.dart';
 export 'decline_request_dialog.dart';
 export 'request_attachments_dialog.dart';
 export 'request_status_chip.dart';

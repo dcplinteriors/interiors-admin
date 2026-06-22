@@ -1,100 +1,47 @@
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/projects/data/project_repository.dart';
-import 'package:dcpl_admin/features/supervisors/supervisors.dart';
-import 'package:dcpl_shared/models/project.dart';
+import 'package:dcpl_shared/models/models.dart';
 import 'package:get/get.dart';
 
-class ProjectsController extends GetxController {
-  ProjectsController(this._repo, this._supervisorRepo);
+class ProjectsController extends PaginatedController<Project> {
+  ProjectsController(this._repo);
 
   final ProjectRepository _repo;
-  final SupervisorRepository _supervisorRepo;
 
   final projects = <Project>[].obs;
-  final supervisors = <Supervisor>[].obs;
-  final isLoading = false.obs;
-  final isLoadingMore = false.obs;
-  final error = RxnString();
-
-  /// Cursor for the next page, or null when the loaded list is complete.
-  final _nextCursor = RxnString();
-  bool get hasMore => _nextCursor.value != null;
-
-  /// Bumped on every `fetch()` (first page). A `loadMore()` captures the current value and
-  /// discards its result if a fetch superseded it meanwhile.
-  int _generation = 0;
 
   @override
-  void onInit() {
-    super.onInit();
-    fetch();
-  }
+  RxList<Project> get items => projects;
 
-  /// Loads the first page, replacing the list.
-  Future<void> fetch() async {
-    final gen = ++_generation;
-    isLoading.value = true;
-    error.value = null;
-    try {
-      // Each project carries its supervisorName, resolved by the backend.
-      final page = await _repo.list();
-      if (gen != _generation) return; // superseded by a newer fetch
-      projects.value = page.items;
-      _nextCursor.value = page.nextCursor;
-    } on ApiException catch (e) {
-      if (gen == _generation) error.value = e.message;
-    } finally {
-      if (gen == _generation) isLoading.value = false;
-    }
-  }
+  @override
+  Future<Page<Project>> fetchPage({String? cursor}) =>
+      _repo.list(cursor: cursor);
 
-  /// Appends the next page. No-op if already loading or there's nothing more.
-  Future<void> loadMore() async {
-    if (isLoadingMore.value || _nextCursor.value == null) return;
-    final gen = _generation; // a fetch() would bump this and invalidate us
-    isLoadingMore.value = true;
-    try {
-      final page = await _repo.list(cursor: _nextCursor.value);
-      if (gen != _generation) return; // a refresh superseded this load
-      projects.addAll(page.items);
-      _nextCursor.value = page.nextCursor;
-    } on ApiException catch (e) {
-      if (gen == _generation) error.value = e.message;
-    } finally {
-      isLoadingMore.value = false;
-    }
-  }
+  /// Loads the full project (with work orders) for the detail view.
+  Future<Project> detail(String id) => _repo.get(id);
 
-  /// Loads the supervisor list for the assign picker (called when the dialog opens).
-  /// Non-fatal — the picker simply shows no options if it fails.
-  Future<void> loadSupervisors() async {
-    try {
-      supervisors.value = await _supervisorRepo.listAll();
-    } on ApiException catch (_) {
-      // The picker shows no options.
-    }
-  }
-
-  /// Creates a project and prepends it. Throws [ApiException] on failure.
+  /// Creates a project (with its initial work orders) and prepends it. Throws [ApiException].
   Future<Project> create({
-    required String particular,
+    required String name,
     required String clientName,
-    required String date,
+    required String projectEngineer,
+    required List<WorkOrderInput> workOrders,
   }) async {
     final created = await _repo.create(
-      particular: particular,
+      name: name,
       clientName: clientName,
-      date: date,
+      projectEngineer: projectEngineer,
+      workOrders: workOrders,
     );
     projects.insert(0, created);
     return created;
   }
 
-  /// Assigns a supervisor and replaces the project in the list. Throws on failure.
-  Future<Project> assign(String projectId, String supervisorId) async {
-    final updated = await _repo.assignSupervisor(projectId, supervisorId);
-    final index = projects.indexWhere((p) => p.id == projectId);
-    if (index != -1) projects[index] = updated;
+  /// Marks a project completed and replaces it in the list. Throws on failure.
+  Future<Project> complete(String id) async {
+    final updated = await _repo.complete(id);
+    final i = projects.indexWhere((p) => p.id == id);
+    if (i != -1) projects[i] = updated;
     return updated;
   }
 }

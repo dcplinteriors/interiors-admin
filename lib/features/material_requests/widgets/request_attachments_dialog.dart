@@ -14,7 +14,8 @@ class RequestAttachmentsDialog extends StatefulWidget {
   final Attachments attachments;
 
   @override
-  State<RequestAttachmentsDialog> createState() => _RequestAttachmentsDialogState();
+  State<RequestAttachmentsDialog> createState() =>
+      _RequestAttachmentsDialogState();
 }
 
 class _RequestAttachmentsDialogState extends State<RequestAttachmentsDialog> {
@@ -45,17 +46,25 @@ class _RequestAttachmentsDialogState extends State<RequestAttachmentsDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_photoUrls.isNotEmpty) ...[
-                Text(l10n.photos, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.photos,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: [for (final f in _photoUrls) _PhotoThumb(urlFuture: f)],
+                  children: [
+                    for (final f in _photoUrls) _PhotoThumb(urlFuture: f),
+                  ],
                 ),
                 const SizedBox(height: 16),
               ],
               if (_audioUrl != null) ...[
-                Text(l10n.audioNote, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.audioNote,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 8),
                 _AudioNote(urlFuture: _audioUrl!),
               ],
@@ -64,7 +73,10 @@ class _RequestAttachmentsDialogState extends State<RequestAttachmentsDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.close)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.close),
+        ),
       ],
     );
   }
@@ -82,8 +94,13 @@ class _PhotoThumb extends StatelessWidget {
       builder: (context, snap) {
         Widget child;
         if (snap.connectionState != ConnectionState.done) {
-          child = const Center(child: SizedBox(
-              height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+          child = const Center(
+            child: SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
         } else if (snap.hasError || snap.data == null) {
           child = Icon(Icons.broken_image_outlined, color: scheme.error);
         } else {
@@ -95,9 +112,15 @@ class _PhotoThumb extends StatelessWidget {
               fit: BoxFit.cover,
               loadingBuilder: (ctx, w, p) => p == null
                   ? w
-                  : const Center(child: SizedBox(
-                      height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-              errorBuilder: (ctx, e, s) => Icon(Icons.broken_image_outlined, color: scheme.error),
+                  : const Center(
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+              errorBuilder: (ctx, e, s) =>
+                  Icon(Icons.broken_image_outlined, color: scheme.error),
             ),
           );
         }
@@ -116,13 +139,11 @@ class _PhotoThumb extends StatelessWidget {
   }
 
   void _openFull(BuildContext context, String url) => showDialog<void>(
-        context: context,
-        builder: (_) => Dialog(
-          child: InteractiveViewer(
-            child: Image.network(url, fit: BoxFit.contain),
-          ),
-        ),
-      );
+    context: context,
+    builder: (_) => Dialog(
+      child: InteractiveViewer(child: Image.network(url, fit: BoxFit.contain)),
+    ),
+  );
 }
 
 class _AudioNote extends StatefulWidget {
@@ -173,11 +194,18 @@ class _AudioNoteState extends State<_AudioNote> {
         if (snap.connectionState != ConnectionState.done) {
           return const Padding(
             padding: EdgeInsets.all(8),
-            child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+            child: SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
           );
         }
         if (snap.hasError || snap.data == null) {
-          return Text(l10n.couldntLoadAttachment, style: TextStyle(color: scheme.error));
+          return Text(
+            l10n.couldntLoadAttachment,
+            style: TextStyle(color: scheme.error),
+          );
         }
         final url = snap.data!;
         return Container(

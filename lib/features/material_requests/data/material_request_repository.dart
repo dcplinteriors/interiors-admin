@@ -1,64 +1,83 @@
 import 'package:dcpl_admin/core/core.dart';
-import 'package:dcpl_shared/models/material_request.dart';
-
-/// One page of requests plus the cursor for the next page (null = last page).
-typedef RequestPage = ({List<MaterialRequest> items, String? nextCursor});
+import 'package:dcpl_shared/models/models.dart';
 
 abstract class MaterialRequestRepository {
-  /// Lists requests (cursor-paginated), optionally filtered by [status] (null = all) and
-  /// continuing after [cursor]. Admin sees all.
-  Future<RequestPage> list({String? status, String? cursor});
+  /// Lists requests (cursor-paginated), optionally filtered by [status], [project] and/or
+  /// [workOrder], continuing after [cursor] (null = first page). Admin sees all.
+  Future<Page<MaterialRequest>> list({
+    MaterialRequestStatus? status,
+    String? project,
+    String? workOrder,
+    String? cursor,
+  });
 
-  /// Accepts a `requested` item, attaching the admin's fulfilment details.
-  Future<MaterialRequest> accept(
+  /// Server-side count of matching items (no pagination) — drives the review badge.
+  /// Pass [statuses] to count several statuses in one call.
+  Future<int> count({
+    MaterialRequestStatus? status,
+    List<MaterialRequestStatus>? statuses,
+  });
+
+  /// Approves a `requested` item into `processing` (vendor not yet assigned).
+  Future<MaterialRequest> accept(String id, {String? remarks});
+
+  /// Assigns the vendor + fulfilment details to a `processing` item (→ `accepted`).
+  Future<MaterialRequest> assignVendor(
     String id, {
     required String expectedDate,
     required String vendor,
+    String? poNumber,
     String? remarks,
   });
 
-  /// Declines a `requested` item, with an optional reason.
-  Future<MaterialRequest> decline(String id, {String? remarks});
+  /// Declines a `requested` item, with a required reason.
+  Future<MaterialRequest> decline(String id, String remarks);
 }
 
 class ApiMaterialRequestRepository implements MaterialRequestRepository {
   ApiMaterialRequestRepository(this._api);
 
-  final ApiClient _api;
+  final DcplApi _api;
 
   @override
-  Future<RequestPage> list({String? status, String? cursor}) async {
-    final data = await _api.get(
-      '/material-requests',
-      query: {'status': ?status, 'cursor': ?cursor},
-    ) as Map<String, dynamic>;
-    final items = (data['items'] as List)
-        .map((e) => MaterialRequest.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return (items: items, nextCursor: data['nextCursor'] as String?);
-  }
+  Future<Page<MaterialRequest>> list({
+    MaterialRequestStatus? status,
+    String? project,
+    String? workOrder,
+    String? cursor,
+  }) => _api.materialRequests.list(
+    status: status,
+    project: project,
+    workOrder: workOrder,
+    cursor: cursor,
+  );
 
   @override
-  Future<MaterialRequest> accept(
+  Future<int> count({
+    MaterialRequestStatus? status,
+    List<MaterialRequestStatus>? statuses,
+  }) => _api.materialRequests.count(status: status, statuses: statuses);
+
+  @override
+  Future<MaterialRequest> accept(String id, {String? remarks}) =>
+      _api.materialRequests.accept(id, remarks: remarks);
+
+  @override
+  Future<MaterialRequest> assignVendor(
     String id, {
     required String expectedDate,
     required String vendor,
+    String? poNumber,
     String? remarks,
-  }) async {
-    final data = await _api.post('/material-requests/$id/accept', body: {
-      'expectedDate': expectedDate,
-      'vendor': vendor,
-      // Omit remarks when empty — the backend treats it as optional.
-      if (remarks != null && remarks.isNotEmpty) 'remarks': remarks,
-    });
-    return MaterialRequest.fromJson(data as Map<String, dynamic>);
-  }
+  }) => _api.materialRequests.assignVendor(
+    id,
+    expectedDate: expectedDate,
+    vendor: vendor,
+    poNumber: poNumber,
+    remarks: remarks,
+  );
 
   @override
-  Future<MaterialRequest> decline(String id, {String? remarks}) async {
-    final data = await _api.post('/material-requests/$id/decline', body: {
-      if (remarks != null && remarks.isNotEmpty) 'remarks': remarks,
-    });
-    return MaterialRequest.fromJson(data as Map<String, dynamic>);
-  }
+  Future<MaterialRequest> decline(String id, String remarks) =>
+      _api.materialRequests.decline(id, remarks);
 }

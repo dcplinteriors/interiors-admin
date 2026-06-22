@@ -21,23 +21,47 @@ Future<void> main() async {
 void _registerDependencies() {
   Get.put(AuthService(), permanent: true);
   Get.put(ApiClient(Get.find<AuthService>()), permanent: true);
+  // Single typed endpoint layer; every repo delegates to it.
+  Get.put(DcplApi(Get.find<ApiClient>()), permanent: true);
 
   Get.lazyPut<SupervisorRepository>(() => ApiSupervisorRepository(Get.find()));
   Get.lazyPut<ProjectRepository>(() => ApiProjectRepository(Get.find()));
+  Get.lazyPut<WorkOrderRepository>(() => ApiWorkOrderRepository(Get.find()));
+  Get.lazyPut<MaterialRequestRepository>(
+    () => ApiMaterialRequestRepository(Get.find()),
+  );
+  Get.lazyPut<AttachmentRepository>(() => ApiAttachmentRepository(Get.find()));
+
+  // Permanent so the Requests nav badge survives navigation without forcing the requests list to
+  // load. HomeShell loads it on mount; the requests controller refreshes it after admin actions.
+  Get.put(
+    RequestsBadgeController(Get.find<MaterialRequestRepository>()),
+    permanent: true,
+  );
 
   Get.lazyPut(() => LoginController(Get.find()), fenix: true);
   Get.lazyPut(
-    () => ProjectsController(Get.find<ProjectRepository>(), Get.find<SupervisorRepository>()),
+    () => ProjectsController(Get.find<ProjectRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => WorkOrdersController(
+      Get.find<WorkOrderRepository>(),
+      Get.find<SupervisorRepository>(),
+      Get.find<ProjectRepository>(),
+    ),
     fenix: true,
   );
   Get.lazyPut(
     () => SupervisorsController(Get.find<SupervisorRepository>()),
     fenix: true,
   );
-  Get.lazyPut<MaterialRequestRepository>(() => ApiMaterialRequestRepository(Get.find()));
-  Get.lazyPut<AttachmentRepository>(() => ApiAttachmentRepository(Get.find()));
   Get.lazyPut(
-    () => MaterialRequestsController(Get.find<MaterialRequestRepository>()),
+    () => MaterialRequestsController(
+      Get.find<MaterialRequestRepository>(),
+      Get.find<ProjectRepository>(),
+      Get.find<WorkOrderRepository>(),
+    ),
     fenix: true,
   );
 }
@@ -47,12 +71,16 @@ class DcplAdminApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      scaffoldMessengerKey: rootScaffoldMessengerKey,
-      routerConfig: AppRouter.router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-    );
+    onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+    debugShowCheckedModeBanner: false,
+    // Both themes are wired so switching works; the app is locked to dark for
+    // now (no UI toggle). Flip to ThemeMode.system/.light to expose light.
+    theme: AppTheme.light,
+    darkTheme: AppTheme.dark,
+    themeMode: ThemeMode.dark,
+    scaffoldMessengerKey: rootScaffoldMessengerKey,
+    routerConfig: AppRouter.router,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+  );
 }

@@ -1,14 +1,16 @@
 import 'package:dcpl_admin/core/core.dart';
-import 'package:dcpl_admin/features/projects/projects_controller.dart';
 import 'package:dcpl_admin/features/supervisors/supervisors.dart';
-import 'package:dcpl_shared/models/project.dart';
+import 'package:dcpl_admin/features/work_orders/work_orders_controller.dart';
+import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+/// Assigns a supervisor to a work order. Loads the supervisor list each time it opens
+/// (so a freshly-added supervisor is pickable) and can create one inline.
 class AssignSupervisorDialog extends StatefulWidget {
-  const AssignSupervisorDialog({super.key, required this.project});
+  const AssignSupervisorDialog({super.key, required this.workOrder});
 
-  final Project project;
+  final WorkOrder workOrder;
 
   @override
   State<AssignSupervisorDialog> createState() => _AssignSupervisorDialogState();
@@ -19,19 +21,15 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
   bool _submitting = false;
   String? _error;
 
-  ProjectsController get _controller => Get.find<ProjectsController>();
+  WorkOrdersController get _controller => Get.find<WorkOrdersController>();
 
   @override
   void initState() {
     super.initState();
-    // Load the supervisor list for the picker each time the dialog opens, so a supervisor
-    // added since is pickable. This is the only caller of loadSupervisors (the projects
-    // table itself reads the backend-resolved name off each project). Body is reactive (Obx).
+    _selectedUid = widget.workOrder.supervisorId;
     _controller.loadSupervisors();
   }
 
-  // Add a supervisor without leaving the assign flow: open the create dialog,
-  // then refresh the picker and pre-select the newly-created supervisor.
   Future<void> _openCreate() async {
     final created = await showDialog<Supervisor>(
       context: context,
@@ -51,15 +49,18 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
       _error = null;
     });
     try {
-      await _controller.assign(widget.project.id, _selectedUid!);
+      await _controller.assign(widget.workOrder.id, _selectedUid!);
       if (!mounted) return;
       final message = AppLocalizations.of(context).supervisorAssigned;
-      Navigator.of(context).pop();
+      // Pop `true` so callers (e.g. the project dialog) can refresh on assignment.
+      Navigator.of(context).pop(true);
       showAppSnackbar(message);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'Something went wrong. Please try again.');
+      if (mounted) {
+        setState(() => _error = 'Something went wrong. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -96,7 +97,10 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_error != null) ...[
-                Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
                 const SizedBox(height: 8),
               ],
               Flexible(
@@ -113,7 +117,9 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
                           value: s.uid,
                           title: Text(s.name),
                           subtitle: Text(s.email),
-                          secondary: CircleAvatar(child: Text(_initials(s.name))),
+                          secondary: CircleAvatar(
+                            child: Text(_initials(s.name)),
+                          ),
                         ),
                     ],
                   ),
@@ -141,7 +147,10 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
           onPressed: (_selectedUid == null || _submitting) ? null : _assign,
           child: _submitting
               ? const SizedBox(
-                  height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : Text(l10n.assign),
         ),
       ],

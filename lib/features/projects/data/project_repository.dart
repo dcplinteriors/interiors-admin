@@ -1,57 +1,73 @@
 import 'package:dcpl_admin/core/core.dart';
-import 'package:dcpl_shared/models/project.dart';
-
-/// One page of projects plus the cursor for the next page (null = last page).
-typedef ProjectPage = ({List<Project> items, String? nextCursor});
+import 'package:dcpl_shared/models/models.dart';
 
 /// Port for project data. The controller depends on this abstraction (testable with a fake).
 abstract class ProjectRepository {
   /// Lists projects (cursor-paginated), continuing after [cursor] (null = first page).
-  Future<ProjectPage> list({String? cursor});
+  Future<Page<Project>> list({String? cursor});
+
+  /// Every project (pages through `list`) — for the request/work-order project filters.
+  Future<List<Project>> listAll();
+
+  /// The full project with its work orders.
+  Future<Project> get(String id);
+
+  /// Creates a project together with its initial work orders.
   Future<Project> create({
-    required String particular,
+    required String name,
     required String clientName,
-    required String date,
+    required String projectEngineer,
+    required List<WorkOrderInput> workOrders,
   });
-  Future<Project> assignSupervisor(String projectId, String supervisorId);
+
+  /// Adds a work order to an existing project.
+  Future<WorkOrder> addWorkOrder(String projectId, WorkOrderInput input);
+
+  /// Marks a project completed.
+  Future<Project> complete(String id);
 }
 
 class ApiProjectRepository implements ProjectRepository {
   ApiProjectRepository(this._api);
 
-  final ApiClient _api;
+  final DcplApi _api;
 
   @override
-  Future<ProjectPage> list({String? cursor}) async {
-    final data = await _api.get(
-      '/projects',
-      query: {'cursor': ?cursor},
-    ) as Map<String, dynamic>;
-    final items = (data['items'] as List)
-        .map((e) => Project.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return (items: items, nextCursor: data['nextCursor'] as String?);
+  Future<Page<Project>> list({String? cursor}) =>
+      _api.projects.list(cursor: cursor);
+
+  @override
+  Future<List<Project>> listAll() async {
+    final all = <Project>[];
+    String? cursor;
+    do {
+      final page = await _api.projects.list(cursor: cursor);
+      all.addAll(page.items);
+      cursor = page.nextCursor;
+    } while (cursor != null);
+    return all;
   }
+
+  @override
+  Future<Project> get(String id) => _api.projects.get(id);
 
   @override
   Future<Project> create({
-    required String particular,
+    required String name,
     required String clientName,
-    required String date,
-  }) async {
-    final data = await _api.post('/projects', body: {
-      'particular': particular,
-      'clientName': clientName,
-      'date': date,
-    });
-    return Project.fromJson(data as Map<String, dynamic>);
-  }
+    required String projectEngineer,
+    required List<WorkOrderInput> workOrders,
+  }) => _api.projects.create(
+    name: name,
+    clientName: clientName,
+    projectEngineer: projectEngineer,
+    workOrders: workOrders,
+  );
 
   @override
-  Future<Project> assignSupervisor(String projectId, String supervisorId) async {
-    final data = await _api.post('/projects/$projectId/assign', body: {
-      'supervisorId': supervisorId,
-    });
-    return Project.fromJson(data as Map<String, dynamic>);
-  }
+  Future<WorkOrder> addWorkOrder(String projectId, WorkOrderInput input) =>
+      _api.projects.addWorkOrder(projectId, input);
+
+  @override
+  Future<Project> complete(String id) => _api.projects.complete(id);
 }

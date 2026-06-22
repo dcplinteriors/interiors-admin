@@ -22,17 +22,16 @@ class _FakeAdapter implements HttpClientAdapter {
     RequestOptions options,
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
-  ) =>
-      handler(options);
+  ) => handler(options);
 }
 
 ResponseBody _json(Object body, int status) => ResponseBody.fromString(
-      jsonEncode(body),
-      status,
-      headers: {
-        Headers.contentTypeHeader: [Headers.jsonContentType],
-      },
-    );
+  jsonEncode(body),
+  status,
+  headers: {
+    Headers.contentTypeHeader: [Headers.jsonContentType],
+  },
+);
 
 void main() {
   late MockAuthService auth;
@@ -46,21 +45,26 @@ void main() {
 
   ApiClient client() => ApiClient(auth, dio: dio);
 
-  test('get() returns the decoded body and attaches the bearer token', () async {
-    RequestOptions? sent;
-    dio.httpClientAdapter = _FakeAdapter((options) async {
-      sent = options;
-      return _json({'ok': true}, 200);
-    });
+  test(
+    'get() returns the decoded body and attaches the bearer token',
+    () async {
+      RequestOptions? sent;
+      dio.httpClientAdapter = _FakeAdapter((options) async {
+        sent = options;
+        return _json({'ok': true}, 200);
+      });
 
-    final res = await client().get('/health');
+      final res = await client().get('/health');
 
-    expect(res, {'ok': true});
-    expect(sent!.headers['Authorization'], 'Bearer tok');
-  });
+      expect(res, {'ok': true});
+      expect(sent!.headers['Authorization'], 'Bearer tok');
+    },
+  );
 
   test('post() returns the decoded body', () async {
-    dio.httpClientAdapter = _FakeAdapter((options) async => _json({'id': '1'}, 201));
+    dio.httpClientAdapter = _FakeAdapter(
+      (options) async => _json({'id': '1'}, 201),
+    );
 
     final res = await client().post('/projects', body: {'particular': 'Lobby'});
 
@@ -76,9 +80,11 @@ void main() {
 
     await expectLater(
       client().get('/x'),
-      throwsA(isA<ApiException>()
-          .having((e) => e.statusCode, 'statusCode', 400)
-          .having((e) => e.message, 'message', 'bad input')),
+      throwsA(
+        isA<ApiException>()
+            .having((e) => e.statusCode, 'statusCode', 400)
+            .having((e) => e.message, 'message', 'bad input'),
+      ),
     );
   });
 
@@ -92,13 +98,15 @@ void main() {
 
     await expectLater(
       client().get('/x'),
-      throwsA(isA<ApiException>()
-          .having((e) => e.statusCode, 'statusCode', 0)
-          .having(
-            (e) => e.message,
-            'message',
-            'Cannot reach the server. Is the backend running?',
-          )),
+      throwsA(
+        isA<ApiException>()
+            .having((e) => e.statusCode, 'statusCode', 0)
+            .having(
+              (e) => e.message,
+              'message',
+              'Cannot reach the server. Is the backend running?',
+            ),
+      ),
     );
   });
 }

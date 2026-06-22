@@ -9,11 +9,8 @@ abstract class AttachmentRepository {
 class ApiAttachmentRepository implements AttachmentRepository {
   ApiAttachmentRepository(this._api);
 
-  final ApiClient _api;
+  final DcplApi _api;
 
   @override
-  Future<String> downloadUrl(String path) async {
-    final data = await _api.post('/uploads/download-url', body: {'path': path});
-    return (data as Map<String, dynamic>)['url'] as String;
-  }
+  Future<String> downloadUrl(String path) => _api.uploads.downloadUrl(path);
 }

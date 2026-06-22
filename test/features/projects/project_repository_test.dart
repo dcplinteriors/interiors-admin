@@ -11,73 +11,104 @@ void main() {
 
   setUp(() {
     api = MockApiClient();
-    repo = ApiProjectRepository(api);
+    repo = ApiProjectRepository(DcplApi(api));
   });
 
-  Map<String, dynamic> projectJson({String? supervisorId}) => {
-        'id': 'p1',
-        'particular': 'Lobby',
-        'clientName': 'Acme',
-        'date': '2026-06-06',
-        'po': 'PO_26-27_06/0001',
-        'supervisorId': supervisorId,
-        'status': 'active',
-        'createdAt': '2026-06-06T00:00:00.000Z',
-      };
+  Map<String, dynamic> projectJson() => {
+    'id': 'p1',
+    'number': '26-27_0001',
+    'name': 'Lobby',
+    'clientName': 'Acme',
+    'projectEngineer': 'Eng',
+    'status': 'active',
+    'createdAt': '2026-06-06T00:00:00.000Z',
+    'workOrderCount': 2,
+  };
 
-  test('Project.fromJson parses fields and isAssigned', () {
-    final p = Project.fromJson(projectJson(supervisorId: 'sup1'));
-    expect(p.id, 'p1');
-    expect(p.particular, 'Lobby');
-    expect(p.po, 'PO_26-27_06/0001');
-    expect(p.isAssigned, isTrue);
-    expect(Project.fromJson(projectJson()).isAssigned, isFalse);
-  });
+  Map<String, dynamic> workOrderJson() => {
+    'id': 'w1',
+    'project': 'p1',
+    'number': '26-27_0001/0001',
+    'name': 'Civil',
+    'date': '2026-06-10',
+    'status': 'pending',
+  };
 
   test('list() GETs /projects and parses the page', () async {
-    when(() => api.get('/projects', query: any(named: 'query')))
-        .thenAnswer((_) async => {
-              'items': [projectJson()],
-              'nextCursor': 'c1',
-            });
+    when(() => api.get('/projects', query: any(named: 'query'))).thenAnswer(
+      (_) async => {
+        'items': [projectJson()],
+        'nextCursor': 'c1',
+      },
+    );
     final result = await repo.list();
     expect(result.items, hasLength(1));
-    expect(result.items.first.particular, 'Lobby');
+    expect(result.items.first.name, 'Lobby');
+    expect(result.items.first.workOrderCount, 2);
     expect(result.nextCursor, 'c1');
-    verify(() => api.get('/projects', query: any(named: 'query'))).called(1);
   });
 
-  test('list(cursor:) forwards the cursor in the query', () async {
-    when(() => api.get('/projects', query: any(named: 'query')))
-        .thenAnswer((_) async => {'items': <dynamic>[], 'nextCursor': null});
-    await repo.list(cursor: 'abc');
-    final query = verify(() => api.get('/projects', query: captureAny(named: 'query')))
-        .captured
-        .single as Map;
-    expect(query['cursor'], 'abc');
+  test('listAll() pages through every project', () async {
+    var call = 0;
+    when(() => api.get('/projects', query: any(named: 'query'))).thenAnswer((
+      _,
+    ) async {
+      call++;
+      return call == 1
+          ? {
+              'items': [projectJson()],
+              'nextCursor': 'c1',
+            }
+          : {'items': <dynamic>[], 'nextCursor': null};
+    });
+    final all = await repo.listAll();
+    expect(all, hasLength(1));
+    verify(() => api.get('/projects', query: any(named: 'query'))).called(2);
   });
 
-  test('create() POSTs /projects with the form body and parses the result', () async {
-    when(() => api.post('/projects', body: any(named: 'body')))
-        .thenAnswer((_) async => projectJson());
-    final p = await repo.create(particular: 'Lobby', clientName: 'Acme', date: '2026-06-06');
-    expect(p.po, 'PO_26-27_06/0001');
-    final body = verify(() => api.post('/projects', body: captureAny(named: 'body')))
-        .captured
-        .single as Map;
-    expect(body['particular'], 'Lobby');
-    expect(body['clientName'], 'Acme');
-    expect(body['date'], '2026-06-06');
+  test('create() POSTs /projects with the project + work orders', () async {
+    when(() => api.post('/projects', body: any(named: 'body'))).thenAnswer(
+      (_) async => {
+        ...projectJson(),
+        'workOrders': [workOrderJson()],
+      },
+    );
+    final p = await repo.create(
+      name: 'Lobby',
+      clientName: 'Acme',
+      projectEngineer: 'Eng',
+      workOrders: const [WorkOrderInput(name: 'Civil', date: '2026-06-10')],
+    );
+    expect(p.workOrders, hasLength(1));
+    final body =
+        verify(
+              () => api.post('/projects', body: captureAny(named: 'body')),
+            ).captured.single
+            as Map;
+    expect(body['name'], 'Lobby');
+    expect(body['projectEngineer'], 'Eng');
+    expect((body['workOrders'] as List).single, {
+      'name': 'Civil',
+      'date': '2026-06-10',
+    });
   });
 
-  test('assignSupervisor() POSTs to the assign path with supervisorId', () async {
-    when(() => api.post('/projects/p1/assign', body: any(named: 'body')))
-        .thenAnswer((_) async => projectJson(supervisorId: 'sup1'));
-    final p = await repo.assignSupervisor('p1', 'sup1');
-    expect(p.supervisorId, 'sup1');
-    final body = verify(() => api.post('/projects/p1/assign', body: captureAny(named: 'body')))
-        .captured
-        .single as Map;
-    expect(body['supervisorId'], 'sup1');
+  test('addWorkOrder() POSTs to the project work-orders path', () async {
+    when(
+      () => api.post('/projects/p1/work-orders', body: any(named: 'body')),
+    ).thenAnswer((_) async => workOrderJson());
+    final w = await repo.addWorkOrder(
+      'p1',
+      const WorkOrderInput(name: 'Civil', date: '2026-06-10'),
+    );
+    expect(w.id, 'w1');
+  });
+
+  test('complete() POSTs to the complete path', () async {
+    when(
+      () => api.post('/projects/p1/complete'),
+    ).thenAnswer((_) async => {...projectJson(), 'status': 'completed'});
+    final p = await repo.complete('p1');
+    expect(p.status.wire, 'completed');
   });
 }
