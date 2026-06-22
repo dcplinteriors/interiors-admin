@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dcpl_admin/app/app.dart';
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/features.dart';
@@ -23,6 +25,10 @@ void _registerDependencies() {
   Get.put(ApiClient(Get.find<AuthService>()), permanent: true);
   // Single typed endpoint layer; every repo delegates to it.
   Get.put(DcplApi(Get.find<ApiClient>()), permanent: true);
+
+  // Wake a scaled-to-zero backend instance during launch so the first data
+  // screen doesn't hit a cold start. Fire-and-forget; never throws.
+  unawaited(Get.find<ApiClient>().warmUp());
 
   Get.lazyPut<SupervisorRepository>(() => ApiSupervisorRepository(Get.find()));
   Get.lazyPut<ProjectRepository>(() => ApiProjectRepository(Get.find()));
