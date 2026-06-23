@@ -34,7 +34,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dcpl_shared:
     git:
-      url: https://github.com/dcplinteriors-hub/interiors-shared.git
+      url: https://github.com/dcplinteriors/interiors-shared.git
       ref: main
   dio: ^5.9.2
   firebase_auth: ^6.5.2
