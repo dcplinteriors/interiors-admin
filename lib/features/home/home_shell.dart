@@ -71,14 +71,14 @@ class _HomeShellState extends State<HomeShell> {
         ),
         railHeader: const Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
-          child: _BrandLockup(stacked: true, logoHeight: 22),
+          child: _BrandLockup(stacked: false, logoHeight: 40),
         ),
         railFooter: _AccountRow(
           email: auth.currentUser?.email ?? '',
           signOutLabel: l10n.signOut,
           onSignOut: auth.signOut,
         ),
-        appBarTitle: const _BrandLockup(stacked: false, logoHeight: 20),
+        appBarTitle: const _BrandLockup(stacked: false, logoHeight: 40),
         appBarActions: [
           IconButton(
             tooltip: l10n.signOut,
