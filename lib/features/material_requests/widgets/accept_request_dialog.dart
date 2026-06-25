@@ -61,7 +61,7 @@ class _AcceptRequestDialogState extends State<AcceptRequestDialog> {
     final scheme = Theme.of(context).colorScheme;
     final r = widget.request;
     final subhead =
-        '${r.particular} · ${l10n.qtyWithUnit(r.quantityLabel, r.unit)} · ${r.clientName ?? '—'}';
+        '${r.particular} · ${l10n.qtyWithUnit(r.quantityLabel, r.unit)} · ${r.clientName ?? 'N/A'}';
 
     return AlertDialog(
       title: Text(l10n.acceptRequestTitle),

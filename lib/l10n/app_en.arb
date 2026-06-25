@@ -228,6 +228,10 @@
   "@colItem": {
     "description": "Requests table column header: item / particular."
   },
+  "colFiles": "Files",
+  "@colFiles": {
+    "description": "Requests table column header: attachment + bill count chips."
+  },
   "colMake": "Make",
   "@colMake": {
     "description": "Requests table column header: make / brand."
@@ -394,6 +398,26 @@
   "@closeNoteTitle": {
     "description": "Closed-item bills dialog: heading for the supervisor's close note."
   },
+  "colItemNumber": "Item number",
+  "@colItemNumber": {
+    "description": "Request detail: the item's system number (e.g. 26-27_0001/0001/0001)."
+  },
+  "colWorkOrder": "Work order",
+  "@colWorkOrder": {
+    "description": "Request detail: the parent work order (single)."
+  },
+  "poNumberLabel": "PO number",
+  "@poNumberLabel": {
+    "description": "Request detail: read-back label for the admin's PO number."
+  },
+  "remarksLabel": "Remarks",
+  "@remarksLabel": {
+    "description": "Request detail: read-back label for the admin's remarks / decline reason."
+  },
+  "supplyDetailsSection": "Supply details",
+  "@supplyDetailsSection": {
+    "description": "Request detail: section heading over the admin's vendor/expected-date/PO/remarks."
+  },
   "couldntLoadAttachment": "Couldn't load",
   "@couldntLoadAttachment": {
     "description": "Shown when a photo/audio attachment fails to load."
@@ -555,6 +579,10 @@
   "statusClosed": "Closed",
   "@statusClosed": {
     "description": "Request status chip: closed."
+  },
+  "statusBySupervisorSuffix": "by supervisor",
+  "@statusBySupervisorSuffix": {
+    "description": "Suffix appended to supervisor-driven statuses (closed, cancelled) in the Admin status FILTER dropdown only — e.g. 'Closed by supervisor' — so the admin sees who actions them. The status chips stay unsuffixed."
   },
   "acceptToProcessingBody": "This approves the request. You can assign a vendor next.",
   "@acceptToProcessingBody": {

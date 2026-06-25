@@ -69,7 +69,7 @@ class _DeclineRequestDialogState extends State<DeclineRequestDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                '${r.particular} · ${r.clientName ?? '—'}',
+                '${r.particular} · ${r.clientName ?? 'N/A'}',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),

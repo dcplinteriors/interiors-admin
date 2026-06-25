@@ -5,6 +5,7 @@ import 'package:dcpl_admin/features/material_requests/widgets/assign_vendor_dial
 import 'package:dcpl_admin/features/material_requests/widgets/close_bills_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/decline_request_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_attachments_dialog.dart';
+import 'package:dcpl_admin/features/material_requests/widgets/request_detail_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_status_chip.dart';
 import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart';
@@ -74,7 +75,11 @@ class _Filters extends GetView<MaterialRequestsController> {
             options: [
               FilterOption(null, l10n.allStatuses),
               for (final s in MaterialRequestStatus.values)
-                FilterOption(s, _statusLabel(l10n, s)),
+                FilterOption(
+                  s,
+                  _statusLabel(l10n, s),
+                  swatch: context.statusColors.forRequest(s.wire).ink,
+                ),
             ],
           ),
           FilterDropdown<String?>(
@@ -156,6 +161,7 @@ class _Cards extends StatelessWidget {
           railColor: status.forRequest(r.status.wire).ink,
           title: r.particular,
           trailing: RequestStatusChip(r.status),
+          onTap: () => _openDetail(context, r),
           fields: [
             EntityField(l10n.colMake, text: r.make, muted: true),
             if (r.size.isNotEmpty) EntityField(l10n.colSize, text: r.size),
@@ -163,9 +169,9 @@ class _Cards extends StatelessWidget {
               l10n.colQty,
               text: l10n.qtyWithUnit(r.quantityLabel, r.unit),
             ),
-            EntityField(l10n.navWorkOrders, text: r.workOrderName ?? '—'),
-            EntityField(l10n.colClient, text: r.clientName ?? '—'),
-            EntityField(l10n.colSupervisor, text: r.supervisorName ?? '—'),
+            EntityField(l10n.navWorkOrders, text: r.workOrderName ?? 'N/A'),
+            EntityField(l10n.colClient, text: r.clientName ?? 'N/A'),
+            EntityField(l10n.colSupervisor, text: r.supervisorName ?? 'N/A'),
             EntityField(l10n.colSubmitted, text: formatDate(r.createdAt)),
             if (r.attachments.isNotEmpty)
               EntityField(
@@ -204,8 +210,10 @@ class _Table extends StatelessWidget {
     return DcplTable(
       columns: [
         DcplColumn(l10n.colItem, flex: 3),
+        DcplColumn(l10n.colFiles, fixedWidth: 116),
         DcplColumn(l10n.colQty, fixedWidth: 100),
         DcplColumn(l10n.navWorkOrders, flex: 2),
+        DcplColumn(l10n.colClient, flex: 2),
         DcplColumn(l10n.colSupervisor, flex: 2),
         DcplColumn(l10n.colSubmitted, fixedWidth: 96, numeric: true),
         DcplColumn(l10n.colStatus, fixedWidth: 168),
@@ -215,23 +223,14 @@ class _Table extends StatelessWidget {
         for (final r in requests)
           DcplRow(
             railColor: status.forRequest(r.status.wire).ink,
+            onTap: () => _openDetail(context, r),
             cells: [
-              Row(
-                children: [
-                  Expanded(
-                    child: PrimaryCell(
-                      r.particular,
-                      subtitle: _itemSubtitle(r),
-                    ),
-                  ),
-                  if (r.attachments.isNotEmpty)
-                    _AttachmentButton(r, dense: true),
-                  if (r.billImages.isNotEmpty) _BillButton(r, dense: true),
-                ],
-              ),
+              PrimaryCell(r.particular, subtitle: _itemSubtitle(r)),
+              _FilesCell(r),
               Text(l10n.qtyWithUnit(r.quantityLabel, r.unit)),
-              Text(r.workOrderName ?? '—'),
-              Text(r.supervisorName ?? '—'),
+              Text(r.workOrderName ?? 'N/A'),
+              Text(r.clientName ?? 'N/A'),
+              Text(r.supervisorName ?? 'N/A'),
               Text(formatDate(r.createdAt)),
               RequestStatusChip(r.status),
               _RowActions(r, muted),
@@ -260,17 +259,11 @@ class _AttachmentButton extends StatelessWidget {
           RequestAttachmentsDialog(attachments: request.attachments),
     );
     if (dense) {
-      return IconButton(
+      return _CountChip(
+        icon: Icons.attach_file,
+        count: count,
         tooltip: l10n.attachments,
-        visualDensity: VisualDensity.compact,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-        iconSize: 16,
-        icon: Badge(
-          label: Text('$count'),
-          child: const Icon(Icons.attach_file),
-        ),
-        onPressed: open,
+        onTap: open,
       );
     }
     return TextButton.icon(
@@ -304,17 +297,11 @@ class _BillButton extends StatelessWidget {
       ),
     );
     if (dense) {
-      return IconButton(
+      return _CountChip(
+        icon: Icons.receipt_long_outlined,
+        count: count,
         tooltip: l10n.billsTitle,
-        visualDensity: VisualDensity.compact,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-        iconSize: 16,
-        icon: Badge(
-          label: Text('$count'),
-          child: const Icon(Icons.receipt_long_outlined),
-        ),
-        onPressed: open,
+        onTap: open,
       );
     }
     return TextButton.icon(
@@ -325,6 +312,89 @@ class _BillButton extends StatelessWidget {
       icon: const Icon(Icons.receipt_long_outlined, size: 18),
       label: Text('$count'),
       onPressed: open,
+    );
+  }
+}
+
+/// The desktop table's "Files" cell: attachment + bill count chips, aligned in
+/// their own column (so they line up row-to-row instead of crowding the item
+/// title). A muted dash when the item has neither.
+class _FilesCell extends StatelessWidget {
+  const _FilesCell(this.request);
+
+  final MaterialRequest request;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAttachments = request.attachments.isNotEmpty;
+    final hasBills = request.billImages.isNotEmpty;
+    if (!hasAttachments && !hasBills) {
+      return Text(
+        '—',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasAttachments) _AttachmentButton(request, dense: true),
+        if (hasAttachments && hasBills) const SizedBox(width: 6),
+        if (hasBills) _BillButton(request, dense: true),
+      ],
+    );
+  }
+}
+
+/// A compact `icon + count` pill for the dense table cell — reads as "📎 2"
+/// instead of a floating badge stacked on a tiny icon (which looked cramped,
+/// doubly so with attachments + bills side by side). Bordered + muted so it sits
+/// quietly in the row and doesn't fight the status rail or hover highlight.
+class _CountChip extends StatelessWidget {
+  const _CountChip({
+    required this.icon,
+    required this.count,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final int count;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: cs.outlineVariant),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 15, color: cs.onSurfaceVariant),
+                const SizedBox(width: 5),
+                Text(
+                  '$count',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -406,6 +476,13 @@ class _RowActions extends StatelessWidget {
   }
 }
 
+/// Opens the read-only detail dialog showing every field of [r] (both the card
+/// and the table row use this, so the two layouts can't drift).
+void _openDetail(BuildContext context, MaterialRequest r) => showDialog<void>(
+  context: context,
+  builder: (_) => RequestDetailDialog(request: r),
+);
+
 // The make + size context line under an item title.
 String _itemSubtitle(MaterialRequest r) =>
     [r.make, r.size].where((s) => s.isNotEmpty).join(' · ');
@@ -415,7 +492,9 @@ String _statusLabel(AppLocalizations l10n, MaterialRequestStatus s) =>
       MaterialRequestStatus.requested => l10n.statusRequested,
       MaterialRequestStatus.processing => l10n.statusProcessing,
       MaterialRequestStatus.accepted => l10n.statusAccepted,
-      MaterialRequestStatus.closed => l10n.statusClosed,
+      MaterialRequestStatus.closed =>
+        '${l10n.statusClosed} ${l10n.statusBySupervisorSuffix}',
       MaterialRequestStatus.declined => l10n.statusDeclined,
-      MaterialRequestStatus.cancelled => l10n.statusCancelled,
+      MaterialRequestStatus.cancelled =>
+        '${l10n.statusCancelled} ${l10n.statusBySupervisorSuffix}',
     };
