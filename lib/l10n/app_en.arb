@@ -386,6 +386,14 @@
   "@audioNote": {
     "description": "Attachments dialog: audio section heading."
   },
+  "billsTitle": "Bill image(s)",
+  "@billsTitle": {
+    "description": "Closed-item bills dialog/button: title and tooltip."
+  },
+  "closeNoteTitle": "Note",
+  "@closeNoteTitle": {
+    "description": "Closed-item bills dialog: heading for the supervisor's close note."
+  },
   "couldntLoadAttachment": "Couldn't load",
   "@couldntLoadAttachment": {
     "description": "Shown when a photo/audio attachment fails to load."
@@ -547,14 +555,6 @@
   "statusClosed": "Closed",
   "@statusClosed": {
     "description": "Request status chip: closed."
-  },
-  "statusReturned": "Returned",
-  "@statusReturned": {
-    "description": "Request status chip: returned."
-  },
-  "statusSuperseded": "Superseded",
-  "@statusSuperseded": {
-    "description": "Request status chip: superseded."
   },
   "acceptToProcessingBody": "This approves the request. You can assign a vendor next.",
   "@acceptToProcessingBody": {

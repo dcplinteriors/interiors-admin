@@ -2,7 +2,7 @@ import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart';
 
-/// A coloured chip for the eight material-request statuses. Colours come from the
+/// A coloured chip for the material-request statuses. Colours come from the
 /// shared semantic palette ([StatusColors]); only icon + label are decided here.
 class RequestStatusChip extends StatelessWidget {
   const RequestStatusChip(this.status, {super.key});
@@ -31,10 +31,6 @@ class RequestStatusChip extends StatelessWidget {
         Icons.check_circle_outline,
         l10n.statusClosed,
       ),
-      MaterialRequestStatus.returned => (
-        Icons.keyboard_return,
-        l10n.statusReturned,
-      ),
       MaterialRequestStatus.declined => (
         Icons.cancel_outlined,
         l10n.statusDeclined,
@@ -42,10 +38,6 @@ class RequestStatusChip extends StatelessWidget {
       MaterialRequestStatus.cancelled => (
         Icons.block_outlined,
         l10n.statusCancelled,
-      ),
-      MaterialRequestStatus.superseded => (
-        Icons.layers_clear_outlined,
-        l10n.statusSuperseded,
       ),
     };
 

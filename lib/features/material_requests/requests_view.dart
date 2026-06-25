@@ -2,6 +2,7 @@ import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/material_requests/material_requests_controller.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/accept_request_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/assign_vendor_dialog.dart';
+import 'package:dcpl_admin/features/material_requests/widgets/close_bills_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/decline_request_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_attachments_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_status_chip.dart';
@@ -174,6 +175,14 @@ class _Cards extends StatelessWidget {
                   child: _AttachmentButton(r),
                 ),
               ),
+            if (r.billImages.isNotEmpty)
+              EntityField(
+                l10n.billsTitle,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _BillButton(r),
+                ),
+              ),
           ],
           footer: _RowActions(r, muted),
         );
@@ -217,6 +226,7 @@ class _Table extends StatelessWidget {
                   ),
                   if (r.attachments.isNotEmpty)
                     _AttachmentButton(r, dense: true),
+                  if (r.billImages.isNotEmpty) _BillButton(r, dense: true),
                 ],
               ),
               Text(l10n.qtyWithUnit(r.quantityLabel, r.unit)),
@@ -269,6 +279,50 @@ class _AttachmentButton extends StatelessWidget {
         visualDensity: VisualDensity.compact,
       ),
       icon: const Icon(Icons.attach_file, size: 18),
+      label: Text('$count'),
+      onPressed: open,
+    );
+  }
+}
+
+/// Opens the bill image(s) + close note a supervisor attached when closing the item.
+class _BillButton extends StatelessWidget {
+  const _BillButton(this.request, {this.dense = false});
+
+  final MaterialRequest request;
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final count = request.billImages.length;
+    void open() => showDialog<void>(
+      context: context,
+      builder: (_) => CloseBillsDialog(
+        billImages: request.billImages,
+        note: request.closeNote,
+      ),
+    );
+    if (dense) {
+      return IconButton(
+        tooltip: l10n.billsTitle,
+        visualDensity: VisualDensity.compact,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+        iconSize: 16,
+        icon: Badge(
+          label: Text('$count'),
+          child: const Icon(Icons.receipt_long_outlined),
+        ),
+        onPressed: open,
+      );
+    }
+    return TextButton.icon(
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        visualDensity: VisualDensity.compact,
+      ),
+      icon: const Icon(Icons.receipt_long_outlined, size: 18),
       label: Text('$count'),
       onPressed: open,
     );
@@ -347,8 +401,6 @@ class _RowActions extends StatelessWidget {
       case MaterialRequestStatus.cancelled:
         return Text(l10n.withdrawnShort, style: TextStyle(color: muted));
       case MaterialRequestStatus.closed:
-      case MaterialRequestStatus.returned:
-      case MaterialRequestStatus.superseded:
         return Text('—', style: TextStyle(color: muted));
     }
   }
@@ -364,8 +416,6 @@ String _statusLabel(AppLocalizations l10n, MaterialRequestStatus s) =>
       MaterialRequestStatus.processing => l10n.statusProcessing,
       MaterialRequestStatus.accepted => l10n.statusAccepted,
       MaterialRequestStatus.closed => l10n.statusClosed,
-      MaterialRequestStatus.returned => l10n.statusReturned,
       MaterialRequestStatus.declined => l10n.statusDeclined,
       MaterialRequestStatus.cancelled => l10n.statusCancelled,
-      MaterialRequestStatus.superseded => l10n.statusSuperseded,
     };
