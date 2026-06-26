@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/material_requests/data/data.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +63,10 @@ class _RequestAttachmentsDialogState extends State<RequestAttachmentsDialog> {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
-                _AudioNote(urlFuture: _audioUrl!),
+                AudioPlayerBar(
+                  urlFuture: _audioUrl!,
+                  errorLabel: l10n.couldntLoadAttachment,
+                ),
               ],
             ],
           ),
@@ -146,88 +146,3 @@ class _PhotoThumb extends StatelessWidget {
   );
 }
 
-class _AudioNote extends StatefulWidget {
-  const _AudioNote({required this.urlFuture});
-  final Future<String> urlFuture;
-
-  @override
-  State<_AudioNote> createState() => _AudioNoteState();
-}
-
-class _AudioNoteState extends State<_AudioNote> {
-  final AudioPlayer _player = AudioPlayer();
-  StreamSubscription<PlayerState>? _sub;
-  bool _playing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _sub = _player.onPlayerStateChanged.listen((s) {
-      if (mounted) setState(() => _playing = s == PlayerState.playing);
-    });
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    _player.dispose();
-    super.dispose();
-  }
-
-  Future<void> _toggle(String url) async {
-    if (_playing) {
-      await _player.pause();
-    } else if (_player.state == PlayerState.paused) {
-      await _player.resume(); // continue from where it was paused
-    } else {
-      await _player.play(UrlSource(url));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    return FutureBuilder<String>(
-      future: widget.urlFuture,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Padding(
-            padding: EdgeInsets.all(8),
-            child: SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
-        }
-        if (snap.hasError || snap.data == null) {
-          return Text(
-            l10n.couldntLoadAttachment,
-            style: TextStyle(color: scheme.error),
-          );
-        }
-        final url = snap.data!;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                onPressed: () => _toggle(url),
-                icon: Icon(_playing ? Icons.pause_circle : Icons.play_circle),
-              ),
-              const SizedBox(width: 4),
-              Icon(Icons.graphic_eq, color: scheme.onSurfaceVariant),
-              const SizedBox(width: 8),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
