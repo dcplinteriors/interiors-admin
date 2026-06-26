@@ -1,5 +1,6 @@
 import 'package:dcpl_admin/features/material_requests/material_requests.dart';
 import 'package:dcpl_admin/features/projects/projects.dart';
+import 'package:dcpl_admin/features/supervisors/supervisors.dart';
 import 'package:dcpl_admin/features/work_orders/work_orders.dart';
 import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart' hide Page;
@@ -15,6 +16,8 @@ class MockMaterialRequestRepository extends Mock
 class MockProjectRepository extends Mock implements ProjectRepository {}
 
 class MockWorkOrderRepository extends Mock implements WorkOrderRepository {}
+
+class MockSupervisorRepository extends Mock implements SupervisorRepository {}
 
 const request = MaterialRequest(
   id: 'r1',
@@ -35,23 +38,29 @@ void main() {
   late MockMaterialRequestRepository repo;
   late MockProjectRepository projectRepo;
   late MockWorkOrderRepository workOrderRepo;
+  late MockSupervisorRepository supervisorRepo;
 
   setUp(() {
     repo = MockMaterialRequestRepository();
     projectRepo = MockProjectRepository();
     workOrderRepo = MockWorkOrderRepository();
+    supervisorRepo = MockSupervisorRepository();
     when(
       () => repo.list(
         status: any(named: 'status'),
         project: any(named: 'project'),
         workOrder: any(named: 'workOrder'),
+        supervisor: any(named: 'supervisor'),
         cursor: any(named: 'cursor'),
       ),
     ).thenAnswer(
       (_) async => const Page(items: <MaterialRequest>[], nextCursor: null),
     );
     when(() => projectRepo.listAll()).thenAnswer((_) async => <Project>[]);
-    Get.put(MaterialRequestsController(repo, projectRepo, workOrderRepo));
+    when(() => supervisorRepo.listAll()).thenAnswer((_) async => <Supervisor>[]);
+    Get.put(
+      MaterialRequestsController(repo, projectRepo, workOrderRepo, supervisorRepo),
+    );
   });
   tearDown(Get.reset);
 

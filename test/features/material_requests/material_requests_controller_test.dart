@@ -1,5 +1,6 @@
 import 'package:dcpl_admin/features/material_requests/material_requests.dart';
 import 'package:dcpl_admin/features/projects/projects.dart';
+import 'package:dcpl_admin/features/supervisors/supervisors.dart';
 import 'package:dcpl_admin/features/work_orders/work_orders.dart';
 import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,8 @@ class MockMaterialRequestRepository extends Mock
 class MockProjectRepository extends Mock implements ProjectRepository {}
 
 class MockWorkOrderRepository extends Mock implements WorkOrderRepository {}
+
+class MockSupervisorRepository extends Mock implements SupervisorRepository {}
 
 MaterialRequest _req({
   String id = 'mr1',
@@ -35,13 +38,21 @@ void main() {
   late MockMaterialRequestRepository repo;
   late MockProjectRepository projectRepo;
   late MockWorkOrderRepository workOrderRepo;
+  late MockSupervisorRepository supervisorRepo;
   late MaterialRequestsController controller;
 
   setUp(() {
     repo = MockMaterialRequestRepository();
     projectRepo = MockProjectRepository();
     workOrderRepo = MockWorkOrderRepository();
-    controller = MaterialRequestsController(repo, projectRepo, workOrderRepo);
+    supervisorRepo = MockSupervisorRepository();
+    when(() => supervisorRepo.listAll()).thenAnswer((_) async => <Supervisor>[]);
+    controller = MaterialRequestsController(
+      repo,
+      projectRepo,
+      workOrderRepo,
+      supervisorRepo,
+    );
   });
 
   void stubList(List<MaterialRequest> items, {String? cursor}) {
@@ -50,6 +61,7 @@ void main() {
         status: any(named: 'status'),
         project: any(named: 'project'),
         workOrder: any(named: 'workOrder'),
+        supervisor: any(named: 'supervisor'),
         cursor: any(named: 'cursor'),
       ),
     ).thenAnswer((_) async => Page(items: items, nextCursor: cursor));

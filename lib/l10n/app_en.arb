@@ -500,6 +500,10 @@
   "@allWorkOrders": {
     "description": "Filter dropdown option: all work orders."
   },
+  "allSupervisors": "All supervisors",
+  "@allSupervisors": {
+    "description": "Filter dropdown option: all supervisors."
+  },
   "woPending": "Pending",
   "@woPending": {
     "description": "Work-order status: pending (unassigned)."

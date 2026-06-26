@@ -75,6 +75,12 @@ class _Filters extends GetView<MaterialRequestsController> {
                 FilterOption(s, _statusLabel(l10n, s), swatch: context.statusColors.forRequest(s.wire).ink),
             ],
           ),
+          // Independent of the project cascade — a supervisor's items can span projects.
+          FilterDropdown<String?>(
+            value: controller.supervisorFilter.value,
+            onChanged: controller.setSupervisorFilter,
+            options: [FilterOption(null, l10n.allSupervisors), for (final s in controller.supervisors) FilterOption(s.uid, s.name)],
+          ),
           FilterDropdown<String?>(
             value: controller.projectFilter.value,
             onChanged: controller.setProjectFilter,

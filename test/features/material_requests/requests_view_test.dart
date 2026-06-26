@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dcpl_admin/features/material_requests/material_requests.dart';
 import 'package:dcpl_admin/features/projects/projects.dart';
+import 'package:dcpl_admin/features/supervisors/supervisors.dart';
 import 'package:dcpl_admin/features/work_orders/work_orders.dart';
 import 'package:dcpl_shared/dcpl_shared.dart';
 import 'package:flutter/material.dart' hide Page;
@@ -17,6 +18,8 @@ class MockMaterialRequestRepository extends Mock
 class MockProjectRepository extends Mock implements ProjectRepository {}
 
 class MockWorkOrderRepository extends Mock implements WorkOrderRepository {}
+
+class MockSupervisorRepository extends Mock implements SupervisorRepository {}
 
 MaterialRequest req(MaterialRequestStatus status, {String? vendor}) =>
     MaterialRequest(
@@ -43,12 +46,15 @@ void main() {
   late MockMaterialRequestRepository repo;
   late MockProjectRepository projectRepo;
   late MockWorkOrderRepository workOrderRepo;
+  late MockSupervisorRepository supervisorRepo;
 
   setUp(() {
     repo = MockMaterialRequestRepository();
     projectRepo = MockProjectRepository();
     workOrderRepo = MockWorkOrderRepository();
+    supervisorRepo = MockSupervisorRepository();
     when(() => projectRepo.listAll()).thenAnswer((_) async => <Project>[]);
+    when(() => supervisorRepo.listAll()).thenAnswer((_) async => <Supervisor>[]);
   });
   tearDown(Get.reset);
 
@@ -58,6 +64,7 @@ void main() {
         status: any(named: 'status'),
         project: any(named: 'project'),
         workOrder: any(named: 'workOrder'),
+        supervisor: any(named: 'supervisor'),
         cursor: any(named: 'cursor'),
       ),
     ).thenAnswer((_) async => Page(items: items, nextCursor: null));
@@ -67,7 +74,9 @@ void main() {
     tester.view.physicalSize = const Size(1800, 1200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    Get.put(MaterialRequestsController(repo, projectRepo, workOrderRepo));
+    Get.put(
+      MaterialRequestsController(repo, projectRepo, workOrderRepo, supervisorRepo),
+    );
     await tester.pumpWidget(testApp(const Scaffold(body: RequestsView())));
   }
 

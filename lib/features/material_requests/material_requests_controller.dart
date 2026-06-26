@@ -4,6 +4,8 @@ import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/material_requests/data/material_request_repository.dart';
 import 'package:dcpl_admin/features/material_requests/requests_badge_controller.dart';
 import 'package:dcpl_admin/features/projects/data/project_repository.dart';
+import 'package:dcpl_admin/features/supervisors/data/supervisor.dart';
+import 'package:dcpl_admin/features/supervisors/data/supervisor_repository.dart';
 import 'package:dcpl_admin/features/work_orders/data/work_order_repository.dart';
 import 'package:dcpl_shared/models/models.dart';
 import 'package:get/get.dart';
@@ -13,22 +15,28 @@ class MaterialRequestsController extends PaginatedController<MaterialRequest> {
     this._repo,
     this._projectRepo,
     this._workOrderRepo,
+    this._supervisorRepo,
   );
 
   final MaterialRequestRepository _repo;
   final ProjectRepository _projectRepo;
   final WorkOrderRepository _workOrderRepo;
+  final SupervisorRepository _supervisorRepo;
 
   final requests = <MaterialRequest>[].obs;
 
-  /// Filters. `statusFilter` null = all; `projectFilter`/`workOrderFilter` are ids.
+  /// Filters. `statusFilter` null = all; `projectFilter`/`workOrderFilter`/`supervisorFilter`
+  /// are ids (supervisor = the item's current assignee).
   final statusFilter = Rxn<MaterialRequestStatus>();
   final projectFilter = RxnString();
   final workOrderFilter = RxnString();
+  final supervisorFilter = RxnString();
 
-  /// Filter-dropdown options. Work orders cascade from the selected project.
+  /// Filter-dropdown options. Work orders cascade from the selected project; supervisors are a
+  /// flat list (a supervisor's items can span projects).
   final projects = <Project>[].obs;
   final workOrders = <WorkOrder>[].obs;
+  final supervisors = <Supervisor>[].obs;
 
   @override
   RxList<MaterialRequest> get items => requests;
@@ -36,8 +44,12 @@ class MaterialRequestsController extends PaginatedController<MaterialRequest> {
   @override
   Future<Page<MaterialRequest>> fetchPage({String? cursor}) => _repo.list(
     status: statusFilter.value,
-    project: projectFilter.value,
+    // A work order already implies its project, so drop the redundant project filter when one is
+    // selected — it keeps the query to a single index (project+workOrder has none) and gives the
+    // same results.
+    project: workOrderFilter.value == null ? projectFilter.value : null,
     workOrder: workOrderFilter.value,
+    supervisor: supervisorFilter.value,
     cursor: cursor,
   );
 
@@ -45,6 +57,7 @@ class MaterialRequestsController extends PaginatedController<MaterialRequest> {
   void onInit() {
     super.onInit();
     loadProjects();
+    loadSupervisors();
   }
 
   Future<void> setStatusFilter(MaterialRequestStatus? status) async {
@@ -68,6 +81,20 @@ class MaterialRequestsController extends PaginatedController<MaterialRequest> {
     if (workOrderFilter.value == workOrderId) return;
     workOrderFilter.value = workOrderId;
     await fetch();
+  }
+
+  Future<void> setSupervisorFilter(String? supervisorUid) async {
+    if (supervisorFilter.value == supervisorUid) return;
+    supervisorFilter.value = supervisorUid;
+    await fetch();
+  }
+
+  Future<void> loadSupervisors() async {
+    try {
+      supervisors.value = await _supervisorRepo.listAll();
+    } on ApiException catch (_) {
+      // Filter simply shows no supervisor options.
+    }
   }
 
   Future<void> loadProjects() async {

@@ -8,6 +8,7 @@ abstract class MaterialRequestRepository {
     MaterialRequestStatus? status,
     String? project,
     String? workOrder,
+    String? supervisor,
     String? cursor,
   });
 
@@ -55,11 +56,13 @@ class ApiMaterialRequestRepository implements MaterialRequestRepository {
     MaterialRequestStatus? status,
     String? project,
     String? workOrder,
+    String? supervisor,
     String? cursor,
   }) => _api.materialRequests.list(
     status: status,
     project: project,
     workOrder: workOrder,
+    supervisor: supervisor,
     cursor: cursor,
   );
 

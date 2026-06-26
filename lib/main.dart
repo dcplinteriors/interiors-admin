@@ -67,6 +67,7 @@ void _registerDependencies() {
       Get.find<MaterialRequestRepository>(),
       Get.find<ProjectRepository>(),
       Get.find<WorkOrderRepository>(),
+      Get.find<SupervisorRepository>(),
     ),
     fenix: true,
   );
