@@ -124,6 +124,28 @@ class MaterialRequestsController extends PaginatedController<MaterialRequest> {
     return updated;
   }
 
+  /// Admin corrects the supervisor's item entry. Status is unchanged, so the row just updates in
+  /// place (and the actionable badge count is unaffected).
+  Future<MaterialRequest> editItem(
+    String id, {
+    String? particular,
+    String? make,
+    String? size,
+    num? quantity,
+    String? unit,
+  }) async {
+    final updated = await _repo.editItem(
+      id,
+      particular: particular,
+      make: make,
+      size: size,
+      quantity: quantity,
+      unit: unit,
+    );
+    _applyDecision(updated);
+    return updated;
+  }
+
   /// After a decision the row's status changes: drop it from view when it no longer
   /// matches the active status filter (e.g. processing while viewing "requested"), else update.
   void _applyDecision(MaterialRequest updated) {

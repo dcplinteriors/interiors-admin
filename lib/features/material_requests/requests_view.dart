@@ -4,6 +4,7 @@ import 'package:dcpl_admin/features/material_requests/widgets/accept_request_dia
 import 'package:dcpl_admin/features/material_requests/widgets/assign_vendor_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/close_bills_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/decline_request_dialog.dart';
+import 'package:dcpl_admin/features/material_requests/widgets/edit_request_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_attachments_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_detail_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_status_chip.dart';
@@ -25,10 +26,7 @@ class RequestsView extends GetView<MaterialRequestsController> {
         const _Filters(),
         const SizedBox(height: 20),
         const Expanded(child: _Body()),
-        LoadMoreBar(
-          controller: controller,
-          label: AppLocalizations.of(context).loadMore,
-        ),
+        LoadMoreBar(controller: controller, label: AppLocalizations.of(context).loadMore),
       ],
     ),
   );
@@ -48,8 +46,7 @@ class _Header extends GetView<MaterialRequestsController> {
           RefreshButton(
             tooltip: l10n.refresh,
             onPressed: controller.fetch,
-            isRefreshing:
-                controller.isLoading.value && controller.requests.isNotEmpty,
+            isRefreshing: controller.isLoading.value && controller.requests.isNotEmpty,
           ),
         ],
       ),
@@ -75,20 +72,13 @@ class _Filters extends GetView<MaterialRequestsController> {
             options: [
               FilterOption(null, l10n.allStatuses),
               for (final s in MaterialRequestStatus.values)
-                FilterOption(
-                  s,
-                  _statusLabel(l10n, s),
-                  swatch: context.statusColors.forRequest(s.wire).ink,
-                ),
+                FilterOption(s, _statusLabel(l10n, s), swatch: context.statusColors.forRequest(s.wire).ink),
             ],
           ),
           FilterDropdown<String?>(
             value: controller.projectFilter.value,
             onChanged: controller.setProjectFilter,
-            options: [
-              FilterOption(null, l10n.allProjects),
-              for (final p in controller.projects) FilterOption(p.id, p.name),
-            ],
+            options: [FilterOption(null, l10n.allProjects), for (final p in controller.projects) FilterOption(p.id, p.name)],
           ),
           // Cascades from the project: shown (enabled) only once a project is
           // picked, so the field is always created fresh in a working state
@@ -97,11 +87,7 @@ class _Filters extends GetView<MaterialRequestsController> {
             FilterDropdown<String?>(
               value: controller.workOrderFilter.value,
               onChanged: controller.setWorkOrderFilter,
-              options: [
-                FilterOption(null, l10n.allWorkOrders),
-                for (final w in controller.workOrders)
-                  FilterOption(w.id, w.name),
-              ],
+              options: [FilterOption(null, l10n.allWorkOrders), for (final w in controller.workOrders) FilterOption(w.id, w.name)],
             ),
         ],
       ),
@@ -120,22 +106,12 @@ class _Body extends GetView<MaterialRequestsController> {
         return const Center(child: CircularProgressIndicator());
       }
       if (controller.error.value != null) {
-        return ErrorState(
-          title: l10n.couldntLoadRequests,
-          message: controller.error.value!,
-          onRetry: controller.fetch,
-        );
+        return ErrorState(title: l10n.couldntLoadRequests, message: controller.error.value!, onRetry: controller.fetch);
       }
       if (controller.requests.isEmpty) {
-        return EmptyState(
-          icon: Icons.inbox_outlined,
-          title: l10n.nothingHereTitle,
-          body: l10n.noRequestsBody,
-        );
+        return EmptyState(icon: Icons.inbox_outlined, title: l10n.nothingHereTitle, body: l10n.noRequestsBody);
       }
-      return context.isCompact
-          ? _Cards(controller.requests.toList())
-          : _Table(controller.requests.toList());
+      return context.isCompact ? _Cards(controller.requests.toList()) : _Table(controller.requests.toList());
     });
   }
 }
@@ -165,10 +141,7 @@ class _Cards extends StatelessWidget {
           fields: [
             EntityField(l10n.colMake, text: r.make, muted: true),
             if (r.size.isNotEmpty) EntityField(l10n.colSize, text: r.size),
-            EntityField(
-              l10n.colQty,
-              text: l10n.qtyWithUnit(r.quantityLabel, r.unit),
-            ),
+            EntityField(l10n.colQty, text: l10n.qtyWithUnit(r.quantityLabel, r.unit)),
             EntityField(l10n.navWorkOrders, text: r.workOrderName ?? 'N/A'),
             EntityField(l10n.colClient, text: r.clientName ?? 'N/A'),
             EntityField(l10n.colSupervisor, text: r.supervisorName ?? 'N/A'),
@@ -176,18 +149,12 @@ class _Cards extends StatelessWidget {
             if (r.attachments.isNotEmpty)
               EntityField(
                 l10n.attachments,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: _AttachmentButton(r),
-                ),
+                child: Align(alignment: Alignment.centerLeft, child: _AttachmentButton(r)),
               ),
             if (r.billImages.isNotEmpty)
               EntityField(
                 l10n.billsTitle,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: _BillButton(r),
-                ),
+                child: Align(alignment: Alignment.centerLeft, child: _BillButton(r)),
               ),
           ],
           footer: _RowActions(r, muted),
@@ -209,15 +176,13 @@ class _Table extends StatelessWidget {
     final status = context.statusColors;
     return DcplTable(
       columns: [
-        DcplColumn(l10n.colItem, flex: 3),
-        DcplColumn(l10n.colFiles, fixedWidth: 116),
-        DcplColumn(l10n.colQty, fixedWidth: 100),
-        DcplColumn(l10n.navWorkOrders, flex: 2),
-        DcplColumn(l10n.colClient, flex: 2),
-        DcplColumn(l10n.colSupervisor, flex: 2),
+        DcplColumn(l10n.colItem, flex: 4),
+        DcplColumn(l10n.colFiles, fixedWidth: 100),
+        DcplColumn(l10n.colWorkOrderClient, flex: 3),
+        DcplColumn(l10n.colSupervisor, flex: 3),
         DcplColumn(l10n.colSubmitted, fixedWidth: 96, numeric: true),
         DcplColumn(l10n.colStatus, fixedWidth: 168),
-        const DcplColumn('', fixedWidth: 210),
+        DcplColumn(l10n.colActions, fixedWidth: 240),
       ],
       rows: [
         for (final r in requests)
@@ -225,11 +190,9 @@ class _Table extends StatelessWidget {
             railColor: status.forRequest(r.status.wire).ink,
             onTap: () => _openDetail(context, r),
             cells: [
-              PrimaryCell(r.particular, subtitle: _itemSubtitle(r)),
+              PrimaryCell(r.particular, subtitle: _itemSubtitle(l10n, r)),
               _FilesCell(r),
-              Text(l10n.qtyWithUnit(r.quantityLabel, r.unit)),
-              Text(r.workOrderName ?? 'N/A'),
-              Text(r.clientName ?? 'N/A'),
+              _WorkOrderClientCell(r, muted),
               Text(r.supervisorName ?? 'N/A'),
               Text(formatDate(r.createdAt)),
               RequestStatusChip(r.status),
@@ -242,35 +205,19 @@ class _Table extends StatelessWidget {
 }
 
 class _AttachmentButton extends StatelessWidget {
-  const _AttachmentButton(this.request, {this.dense = false});
+  const _AttachmentButton(this.request);
 
   final MaterialRequest request;
-  final bool dense;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final count =
-        request.attachments.photos.length +
-        (request.attachments.audio != null ? 1 : 0);
+    final count = request.attachments.photos.length + (request.attachments.audio != null ? 1 : 0);
     void open() => showDialog<void>(
       context: context,
-      builder: (_) =>
-          RequestAttachmentsDialog(attachments: request.attachments),
+      builder: (_) => RequestAttachmentsDialog(attachments: request.attachments),
     );
-    if (dense) {
-      return _CountChip(
-        icon: Icons.attach_file,
-        count: count,
-        tooltip: l10n.attachments,
-        onTap: open,
-      );
-    }
     return TextButton.icon(
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        visualDensity: VisualDensity.compact,
-      ),
+      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), visualDensity: VisualDensity.compact),
       icon: const Icon(Icons.attach_file, size: 18),
       label: Text('$count'),
       onPressed: open,
@@ -280,35 +227,19 @@ class _AttachmentButton extends StatelessWidget {
 
 /// Opens the bill image(s) + close note a supervisor attached when closing the item.
 class _BillButton extends StatelessWidget {
-  const _BillButton(this.request, {this.dense = false});
+  const _BillButton(this.request);
 
   final MaterialRequest request;
-  final bool dense;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final count = request.billImages.length;
     void open() => showDialog<void>(
       context: context,
-      builder: (_) => CloseBillsDialog(
-        billImages: request.billImages,
-        note: request.closeNote,
-      ),
+      builder: (_) => CloseBillsDialog(billImages: request.billImages, note: request.closeNote),
     );
-    if (dense) {
-      return _CountChip(
-        icon: Icons.receipt_long_outlined,
-        count: count,
-        tooltip: l10n.billsTitle,
-        onTap: open,
-      );
-    }
     return TextButton.icon(
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        visualDensity: VisualDensity.compact,
-      ),
+      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), visualDensity: VisualDensity.compact),
       icon: const Icon(Icons.receipt_long_outlined, size: 18),
       label: Text('$count'),
       onPressed: open,
@@ -326,21 +257,42 @@ class _FilesCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAttachments = request.attachments.isNotEmpty;
-    final hasBills = request.billImages.isNotEmpty;
-    if (!hasAttachments && !hasBills) {
-      return Text(
-        '—',
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-      );
+    final l10n = AppLocalizations.of(context);
+    final photos = request.attachments.photos.length;
+    final hasAudio = request.attachments.audio != null;
+    final bills = request.billImages.length;
+    if (photos == 0 && !hasAudio && bills == 0) {
+      return Text('—', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
     }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (hasAttachments) _AttachmentButton(request, dense: true),
-        if (hasAttachments && hasBills) const SizedBox(width: 6),
-        if (hasBills) _BillButton(request, dense: true),
-      ],
+    void openAttachments() => showDialog<void>(
+      context: context,
+      builder: (_) => RequestAttachmentsDialog(attachments: request.attachments),
+    );
+    void openBills() => showDialog<void>(
+      context: context,
+      builder: (_) => CloseBillsDialog(billImages: request.billImages, note: request.closeNote),
+    );
+    // Distinct icons per kind: photos, the voice note, and bills.
+    final chips = <Widget>[
+      if (photos > 0) _CountChip(icon: Icons.image_outlined, count: photos, tooltip: l10n.photos, onTap: openAttachments),
+      if (hasAudio)
+        _CountChip(
+          icon: Icons.graphic_eq,
+          count: null, // a single voice note — icon only
+          tooltip: l10n.audioNote,
+          onTap: openAttachments,
+        ),
+      if (bills > 0) _CountChip(icon: Icons.receipt_long_outlined, count: bills, tooltip: l10n.billsTitle, onTap: openBills),
+    ];
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < chips.length; i++) ...[if (i > 0) const SizedBox(width: 6), chips[i]],
+        ],
+      ),
     );
   }
 }
@@ -350,15 +302,12 @@ class _FilesCell extends StatelessWidget {
 /// doubly so with attachments + bills side by side). Bordered + muted so it sits
 /// quietly in the row and doesn't fight the status rail or hover highlight.
 class _CountChip extends StatelessWidget {
-  const _CountChip({
-    required this.icon,
-    required this.count,
-    required this.tooltip,
-    required this.onTap,
-  });
+  const _CountChip({required this.icon, required this.count, required this.tooltip, required this.onTap});
 
   final IconData icon;
-  final int count;
+
+  /// The badge number, or null for an icon-only chip (e.g. a single voice note).
+  final int? count;
   final String tooltip;
   final VoidCallback onTap;
 
@@ -382,14 +331,13 @@ class _CountChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, size: 15, color: cs.onSurfaceVariant),
-                const SizedBox(width: 5),
-                Text(
-                  '$count',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
+                if (count != null) ...[
+                  const SizedBox(width: 5),
+                  Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.w600),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -399,6 +347,31 @@ class _CountChip extends StatelessWidget {
   }
 }
 
+/// The combined "Work order / Client" cell — the work order name with its client
+/// beneath, so the two related bits of context share one column.
+class _WorkOrderClientCell extends StatelessWidget {
+  const _WorkOrderClientCell(this.request, this.muted);
+
+  final MaterialRequest request;
+  final Color muted;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(request.workOrderName ?? 'N/A', maxLines: 1, overflow: TextOverflow.ellipsis),
+      const SizedBox(height: 2),
+      Text(
+        request.clientName ?? 'N/A',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted),
+      ),
+    ],
+  );
+}
+
 /// Status-gated actions for a request row.
 class _RowActions extends StatelessWidget {
   const _RowActions(this.request, this.muted);
@@ -406,15 +379,17 @@ class _RowActions extends StatelessWidget {
   final MaterialRequest request;
   final Color muted;
 
+  // Shared compact sizing so every action button in the column matches.
+  static const _compact = ButtonStyle(
+    padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
+    visualDensity: VisualDensity.compact,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final r = request;
-    const compact = ButtonStyle(
-      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
-      visualDensity: VisualDensity.compact,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
 
     switch (r.status) {
       case MaterialRequestStatus.requested:
@@ -425,22 +400,24 @@ class _RowActions extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(
-                style: compact,
+                style: _compact,
                 onPressed: () => showDialog<void>(
                   context: context,
                   builder: (_) => DeclineRequestDialog(request: r),
                 ),
                 child: Text(l10n.decline),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               FilledButton.tonal(
-                style: compact,
+                style: _compact,
                 onPressed: () => showDialog<void>(
                   context: context,
                   builder: (_) => AcceptRequestDialog(request: r),
                 ),
                 child: Text(l10n.accept),
               ),
+              const SizedBox(width: 8),
+              _editButton(context, l10n, r),
             ],
           ),
         );
@@ -448,19 +425,24 @@ class _RowActions extends StatelessWidget {
         return FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerRight,
-          child: FilledButton.tonal(
-            style: compact,
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (_) => AssignVendorDialog(request: r),
-            ),
-            child: Text(l10n.assignVendor),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton.tonal(
+                style: _compact,
+                onPressed: () => showDialog<void>(
+                  context: context,
+                  builder: (_) => AssignVendorDialog(request: r),
+                ),
+                child: Text(l10n.assignVendor),
+              ),
+              const SizedBox(width: 8),
+              _editButton(context, l10n, r),
+            ],
           ),
         );
       case MaterialRequestStatus.accepted:
-        final text = (r.vendor != null && r.vendor!.isNotEmpty)
-            ? l10n.vendorArrow(r.vendor!)
-            : l10n.statusAccepted;
+        final text = (r.vendor != null && r.vendor!.isNotEmpty) ? l10n.vendorArrow(r.vendor!) : l10n.statusAccepted;
         return Text(
           text,
           style: TextStyle(color: muted),
@@ -474,6 +456,18 @@ class _RowActions extends StatelessWidget {
         return Text('—', style: TextStyle(color: muted));
     }
   }
+
+  /// Edit affordance for the Actions column — labeled like the other actions, and
+  /// only shown while the item is still requested/processing (where it's rendered).
+  Widget _editButton(BuildContext context, AppLocalizations l10n, MaterialRequest r) => TextButton.icon(
+    style: _compact,
+    icon: const Icon(Icons.edit_outlined, size: 18),
+    label: Text(l10n.editItemAction),
+    onPressed: () => showDialog<void>(
+      context: context,
+      builder: (_) => EditRequestDialog(request: r),
+    ),
+  );
 }
 
 /// Opens the read-only detail dialog showing every field of [r] (both the card
@@ -483,18 +477,15 @@ void _openDetail(BuildContext context, MaterialRequest r) => showDialog<void>(
   builder: (_) => RequestDetailDialog(request: r),
 );
 
-// The make + size context line under an item title.
-String _itemSubtitle(MaterialRequest r) =>
-    [r.make, r.size].where((s) => s.isNotEmpty).join(' · ');
+// The make + size + quantity context line under an item title.
+String _itemSubtitle(AppLocalizations l10n, MaterialRequest r) =>
+    [r.make, r.size, l10n.qtyWithUnit(r.quantityLabel, r.unit)].where((s) => s.isNotEmpty).join(' · ');
 
-String _statusLabel(AppLocalizations l10n, MaterialRequestStatus s) =>
-    switch (s) {
-      MaterialRequestStatus.requested => l10n.statusRequested,
-      MaterialRequestStatus.processing => l10n.statusProcessing,
-      MaterialRequestStatus.accepted => l10n.statusAccepted,
-      MaterialRequestStatus.closed =>
-        '${l10n.statusClosed} ${l10n.statusBySupervisorSuffix}',
-      MaterialRequestStatus.declined => l10n.statusDeclined,
-      MaterialRequestStatus.cancelled =>
-        '${l10n.statusCancelled} ${l10n.statusBySupervisorSuffix}',
-    };
+String _statusLabel(AppLocalizations l10n, MaterialRequestStatus s) => switch (s) {
+  MaterialRequestStatus.requested => l10n.statusRequested,
+  MaterialRequestStatus.processing => l10n.statusProcessing,
+  MaterialRequestStatus.accepted => l10n.statusAccepted,
+  MaterialRequestStatus.closed => '${l10n.statusClosed} ${l10n.statusBySupervisorSuffix}',
+  MaterialRequestStatus.declined => l10n.statusDeclined,
+  MaterialRequestStatus.cancelled => '${l10n.statusCancelled} ${l10n.statusBySupervisorSuffix}',
+};

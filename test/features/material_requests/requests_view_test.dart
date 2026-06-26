@@ -125,9 +125,10 @@ void main() {
 
       expect(find.text('Teak Ply'), findsOneWidget);
       expect(find.text('Ravi'), findsOneWidget); // resolved supervisor name
-      expect(find.text('12 PCS'), findsOneWidget);
+      expect(find.textContaining('12 PCS'), findsOneWidget); // qty in item subtitle
       expect(find.widgetWithText(FilledButton, 'Accept'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Decline'), findsOneWidget);
+      expect(find.byIcon(Icons.edit_outlined), findsOneWidget); // edit affordance
     },
   );
 

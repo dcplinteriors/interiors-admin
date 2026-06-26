@@ -1,5 +1,6 @@
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/close_bills_dialog.dart';
+import 'package:dcpl_admin/features/material_requests/widgets/edit_request_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_attachments_dialog.dart';
 import 'package:dcpl_admin/features/material_requests/widgets/request_status_chip.dart';
 import 'package:dcpl_shared/dcpl_shared.dart';
@@ -13,10 +14,18 @@ import 'package:flutter/material.dart';
 ///
 /// The request is already fully loaded by the list (the backend denormalizes the
 /// display names), so this needs no fetch — it just renders what it's handed.
-class RequestDetailDialog extends StatelessWidget {
+class RequestDetailDialog extends StatefulWidget {
   const RequestDetailDialog({super.key, required this.request});
 
   final MaterialRequest request;
+
+  @override
+  State<RequestDetailDialog> createState() => _RequestDetailDialogState();
+}
+
+class _RequestDetailDialogState extends State<RequestDetailDialog> {
+  /// The current item — updated in place after an admin edit.
+  late MaterialRequest _request = widget.request;
 
   /// `Name (Number)` when a number is present, else the name (or an em dash).
   static String _nameWithNumber(String? name, String? number) {
@@ -24,10 +33,22 @@ class RequestDetailDialog extends StatelessWidget {
     return (number != null && number.isNotEmpty) ? '$n ($number)' : n;
   }
 
+  Future<void> _edit() async {
+    final updated = await showDialog<MaterialRequest>(
+      context: context,
+      builder: (_) => EditRequestDialog(request: _request),
+    );
+    if (updated != null && mounted) setState(() => _request = updated);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final r = request;
+    final r = _request;
+    // Item details are correctable only before a vendor is assigned (backend-enforced).
+    final canEdit =
+        r.status == MaterialRequestStatus.requested ||
+        r.status == MaterialRequestStatus.processing;
     // Vendor/expected/PO are "supply details"; remarks doubles as the decline
     // reason, so it's shown on its own (not under that heading) when it stands
     // alone — e.g. on a declined item with no vendor.
@@ -53,6 +74,12 @@ class RequestDetailDialog extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
+                  if (canEdit)
+                    TextButton.icon(
+                      onPressed: _edit,
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      label: Text(l10n.editItemAction),
+                    ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),

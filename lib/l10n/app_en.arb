@@ -604,6 +604,42 @@
   "@vendorAssigned": {
     "description": "Snackbar after assigning a vendor."
   },
+  "editItemTitle": "Edit item",
+  "@editItemTitle": {
+    "description": "Title of the admin edit-item dialog."
+  },
+  "editItemHint": "Correct what the supervisor entered. Editable only before a vendor is assigned.",
+  "@editItemHint": {
+    "description": "Subtitle explaining the admin edit-item dialog."
+  },
+  "editItemButton": "Save changes",
+  "@editItemButton": {
+    "description": "Edit-item dialog submit button."
+  },
+  "editItemAction": "Edit",
+  "@editItemAction": {
+    "description": "Edit action shown on a request detail when editing is allowed."
+  },
+  "itemUpdated": "Item updated",
+  "@itemUpdated": {
+    "description": "Snackbar after an admin edits a request item."
+  },
+  "descriptionLabel": "Description",
+  "@descriptionLabel": {
+    "description": "Field label for the item description (particular)."
+  },
+  "unitLabel": "Unit",
+  "@unitLabel": {
+    "description": "Field label for the item unit."
+  },
+  "colWorkOrderClient": "Work order / Client",
+  "@colWorkOrderClient": {
+    "description": "Requests table column combining work order and client."
+  },
+  "colActions": "Actions",
+  "@colActions": {
+    "description": "Requests table column header for the per-row action buttons."
+  },
   "poNumberOptionalLabel": "PO number (optional)",
   "@poNumberOptionalLabel": {
     "description": "Assign-vendor dialog: optional PO number field."

@@ -32,6 +32,17 @@ abstract class MaterialRequestRepository {
 
   /// Declines a `requested` item, with a required reason.
   Future<MaterialRequest> decline(String id, String remarks);
+
+  /// Corrects the supervisor-entered item fields (allowed only while `requested`/`processing`).
+  /// Only non-null fields are sent.
+  Future<MaterialRequest> editItem(
+    String id, {
+    String? particular,
+    String? make,
+    String? size,
+    num? quantity,
+    String? unit,
+  });
 }
 
 class ApiMaterialRequestRepository implements MaterialRequestRepository {
@@ -80,4 +91,21 @@ class ApiMaterialRequestRepository implements MaterialRequestRepository {
   @override
   Future<MaterialRequest> decline(String id, String remarks) =>
       _api.materialRequests.decline(id, remarks);
+
+  @override
+  Future<MaterialRequest> editItem(
+    String id, {
+    String? particular,
+    String? make,
+    String? size,
+    num? quantity,
+    String? unit,
+  }) => _api.materialRequests.editItem(
+    id,
+    particular: particular,
+    make: make,
+    size: size,
+    quantity: quantity,
+    unit: unit,
+  );
 }
