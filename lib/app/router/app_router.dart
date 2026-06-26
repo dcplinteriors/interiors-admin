@@ -21,9 +21,16 @@ class AppRouter {
     routes: [
       GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginView()),
       // Persistent shell (rail) with each section as a state-preserving branch.
-      StatefulShellRoute.indexedStack(
+      // The custom container cross-fades branches (instead of the default instant
+      // IndexedStack swap) while keeping every branch alive.
+      StatefulShellRoute(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
+        navigatorContainerBuilder: (context, navigationShell, children) =>
+            FadeThroughBranchContainer(
+              currentIndex: navigationShell.currentIndex,
+              children: children,
+            ),
         branches: [
           StatefulShellBranch(
             routes: [
