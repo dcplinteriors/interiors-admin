@@ -1,4 +1,5 @@
 import 'package:dcpl_admin/core/core.dart';
+import 'package:dcpl_admin/features/work_orders/widgets/add_work_order_dialog.dart';
 import 'package:dcpl_admin/features/work_orders/widgets/assign_supervisor_dialog.dart';
 import 'package:dcpl_admin/features/work_orders/widgets/assignment_chip.dart';
 import 'package:dcpl_admin/features/work_orders/widgets/work_order_status_chip.dart';
@@ -47,9 +48,35 @@ class _Header extends GetView<WorkOrdersController> {
             isRefreshing:
                 controller.isLoading.value && controller.workOrders.isNotEmpty,
           ),
+          const _CreateAction(),
         ],
       ),
     );
+  }
+}
+
+class _CreateAction extends GetView<WorkOrdersController> {
+  const _CreateAction();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    void open() => showDialog<void>(
+      context: context,
+      builder: (_) =>
+          AddWorkOrderDialog(initialProjectId: controller.projectFilter.value),
+    );
+    return context.isCompact
+        ? IconButton.filled(
+            tooltip: l10n.newWorkOrder,
+            onPressed: open,
+            icon: const Icon(Icons.add),
+          )
+        : GradientButton(
+            onPressed: open,
+            icon: Icons.add,
+            label: l10n.newWorkOrder,
+          );
   }
 }
 

@@ -16,6 +16,14 @@ abstract class WorkOrderRepository {
 
   Future<WorkOrder> get(String id);
 
+  /// Adds a work order to an existing project; the backend generates its number.
+  Future<WorkOrder> addToProject(
+    String projectId, {
+    required String name,
+    required String date,
+    String? description,
+  });
+
   /// Assigns a supervisor (pending → active).
   Future<WorkOrder> assign(String id, String supervisorId);
 
@@ -55,6 +63,17 @@ class ApiWorkOrderRepository implements WorkOrderRepository {
 
   @override
   Future<WorkOrder> get(String id) => _api.workOrders.get(id);
+
+  @override
+  Future<WorkOrder> addToProject(
+    String projectId, {
+    required String name,
+    required String date,
+    String? description,
+  }) => _api.projects.addWorkOrder(
+    projectId,
+    WorkOrderInput(name: name, date: date, description: description),
+  );
 
   @override
   Future<WorkOrder> assign(String id, String supervisorId) =>

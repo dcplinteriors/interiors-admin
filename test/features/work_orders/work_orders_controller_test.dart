@@ -94,6 +94,33 @@ void main() {
     expect(controller.workOrders.single.status, WorkOrderStatus.cancelled);
   });
 
+  test('addToProject() prepends the created work order under the all filter', () async {
+    when(
+      () => repo.addToProject(
+        'p1',
+        name: any(named: 'name'),
+        date: any(named: 'date'),
+        description: any(named: 'description'),
+      ),
+    ).thenAnswer((_) async => _wo(id: 'w2'));
+    await controller.addToProject('p1', name: 'Electrical', date: '2026-07-01');
+    expect(controller.workOrders.first.id, 'w2');
+  });
+
+  test('addToProject() omits the row when it does not match the project filter', () async {
+    controller.projectFilter.value = 'pX'; // created WO is under 'p1'
+    when(
+      () => repo.addToProject(
+        'p1',
+        name: any(named: 'name'),
+        date: any(named: 'date'),
+        description: any(named: 'description'),
+      ),
+    ).thenAnswer((_) async => _wo(id: 'w2'));
+    await controller.addToProject('p1', name: 'Electrical', date: '2026-07-01');
+    expect(controller.workOrders, isEmpty);
+  });
+
   test('loadSupervisors() swallows ApiException (non-fatal)', () async {
     when(() => supervisorRepo.listAll()).thenThrow(ApiException(500, 'boom'));
     await controller.loadSupervisors();

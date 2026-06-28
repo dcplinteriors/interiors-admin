@@ -520,6 +520,22 @@
   "@workOrderNameLabel": {
     "description": "Create-project form: a work-order's name field."
   },
+  "newWorkOrder": "New work order",
+  "@newWorkOrder": {
+    "description": "Add-work-order button / dialog title."
+  },
+  "workOrderAdded": "Work order added",
+  "@workOrderAdded": {
+    "description": "Snackbar after adding a work order to a project."
+  },
+  "dateLabel": "Date",
+  "@dateLabel": {
+    "description": "Work-order date field label."
+  },
+  "selectProject": "Select a project",
+  "@selectProject": {
+    "description": "Add-work-order dialog: project picker validation / hint."
+  },
   "workOrderDateLabel": "Date",
   "@workOrderDateLabel": {
     "description": "Create-project form: a work-order's date field."

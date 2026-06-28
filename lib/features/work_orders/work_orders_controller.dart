@@ -68,6 +68,28 @@ class WorkOrdersController extends PaginatedController<WorkOrder> {
     }
   }
 
+  /// Adds a work order to a project (created `pending`). Shows it immediately when it matches the
+  /// active filters. Throws [ApiException] for the dialog to surface.
+  Future<WorkOrder> addToProject(
+    String projectId, {
+    required String name,
+    required String date,
+    String? description,
+  }) async {
+    final created = await _repo.addToProject(
+      projectId,
+      name: name,
+      date: date,
+      description: description,
+    );
+    final projectOk =
+        projectFilter.value == null || projectFilter.value == created.project;
+    final statusOk =
+        statusFilter.value == null || statusFilter.value == created.status;
+    if (projectOk && statusOk) workOrders.insert(0, created);
+    return created;
+  }
+
   Future<WorkOrder> assign(String id, String supervisorId) async {
     final updated = await _repo.assign(id, supervisorId);
     _apply(updated);
