@@ -53,6 +53,12 @@ class _HomeShellState extends State<HomeShell> {
           section: l10n.navSectionWorkspace,
         ),
         DcplNavItem(
+          icon: Icons.storefront_outlined,
+          selectedIcon: Icons.storefront,
+          label: l10n.navVendors,
+          section: l10n.navSectionWorkspace,
+        ),
+        DcplNavItem(
           icon: Icons.inbox_outlined,
           selectedIcon: Icons.inbox,
           label: l10n.navRequests,

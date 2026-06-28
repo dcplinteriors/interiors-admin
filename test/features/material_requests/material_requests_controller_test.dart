@@ -140,7 +140,7 @@ void main() {
       () => repo.assignVendor(
         'mr1',
         expectedDate: any(named: 'expectedDate'),
-        vendor: any(named: 'vendor'),
+        vendorId: any(named: 'vendorId'),
         poNumber: any(named: 'poNumber'),
         remarks: any(named: 'remarks'),
       ),
@@ -148,7 +148,7 @@ void main() {
     await controller.assignVendor(
       'mr1',
       expectedDate: '2026-06-20',
-      vendor: 'V Co',
+      vendorId: 'v1',
     );
     expect(controller.requests.single.status, MaterialRequestStatus.accepted);
   });

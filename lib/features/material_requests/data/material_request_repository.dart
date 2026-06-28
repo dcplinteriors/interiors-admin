@@ -22,11 +22,12 @@ abstract class MaterialRequestRepository {
   /// Approves a `requested` item into `processing` (vendor not yet assigned).
   Future<MaterialRequest> accept(String id, {String? remarks});
 
-  /// Assigns the vendor + fulfilment details to a `processing` item (→ `accepted`).
+  /// Assigns the vendor + fulfilment details to a `processing` item (→ `accepted`). The vendor is
+  /// referenced by id from the managed vendor list.
   Future<MaterialRequest> assignVendor(
     String id, {
     required String expectedDate,
-    required String vendor,
+    required String vendorId,
     String? poNumber,
     String? remarks,
   });
@@ -80,13 +81,13 @@ class ApiMaterialRequestRepository implements MaterialRequestRepository {
   Future<MaterialRequest> assignVendor(
     String id, {
     required String expectedDate,
-    required String vendor,
+    required String vendorId,
     String? poNumber,
     String? remarks,
   }) => _api.materialRequests.assignVendor(
     id,
     expectedDate: expectedDate,
-    vendor: vendor,
+    vendorId: vendorId,
     poNumber: poNumber,
     remarks: remarks,
   );

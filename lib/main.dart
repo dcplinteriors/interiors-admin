@@ -36,6 +36,7 @@ void _registerDependencies() {
   Get.lazyPut<MaterialRequestRepository>(
     () => ApiMaterialRequestRepository(Get.find()),
   );
+  Get.lazyPut<VendorRepository>(() => ApiVendorRepository(Get.find()));
   Get.lazyPut<AttachmentRepository>(() => ApiAttachmentRepository(Get.find()));
 
   // Permanent so the Requests nav badge survives navigation without forcing the requests list to
@@ -60,6 +61,10 @@ void _registerDependencies() {
   );
   Get.lazyPut(
     () => SupervisorsController(Get.find<SupervisorRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => VendorsController(Get.find<VendorRepository>()),
     fenix: true,
   );
   Get.lazyPut(

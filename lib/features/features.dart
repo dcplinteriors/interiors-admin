@@ -6,4 +6,5 @@ export 'home/home.dart';
 export 'material_requests/material_requests.dart';
 export 'projects/projects.dart';
 export 'supervisors/supervisors.dart';
+export 'vendors/vendors.dart';
 export 'work_orders/work_orders.dart';

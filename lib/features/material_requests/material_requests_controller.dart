@@ -128,14 +128,14 @@ class MaterialRequestsController extends PaginatedController<MaterialRequest> {
   Future<MaterialRequest> assignVendor(
     String id, {
     required String expectedDate,
-    required String vendor,
+    required String vendorId,
     String? poNumber,
     String? remarks,
   }) async {
     final updated = await _repo.assignVendor(
       id,
       expectedDate: expectedDate,
-      vendor: vendor,
+      vendorId: vendorId,
       poNumber: poNumber,
       remarks: remarks,
     );

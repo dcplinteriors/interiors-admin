@@ -90,7 +90,7 @@ void main() {
       final r = await repo.assignVendor(
         'mr1',
         expectedDate: '2026-06-20',
-        vendor: 'V Co',
+        vendorId: 'v1',
         poNumber: 'PO-1',
       );
       expect(r.status, MaterialRequestStatus.accepted);
@@ -103,7 +103,7 @@ void main() {
               ).captured.single
               as Map;
       expect(body['expectedDate'], '2026-06-20');
-      expect(body['vendor'], 'V Co');
+      expect(body['vendorId'], 'v1');
       expect(body['poNumber'], 'PO-1');
     },
   );

@@ -62,6 +62,15 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoutes.vendors,
+                pageBuilder: (_, _) =>
+                    const NoTransitionPage(child: VendorsView()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoutes.requests,
                 pageBuilder: (_, _) =>
                     const NoTransitionPage(child: RequestsView()),

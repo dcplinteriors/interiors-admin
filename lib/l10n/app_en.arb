@@ -32,6 +32,78 @@
   "@navSupervisors": {
     "description": "Navigation rail label for the Supervisors tab."
   },
+  "navVendors": "Vendors",
+  "@navVendors": {
+    "description": "Navigation rail label for the Vendors tab."
+  },
+  "newVendor": "New vendor",
+  "@newVendor": {
+    "description": "Add-vendor button / dialog title."
+  },
+  "editVendor": "Edit vendor",
+  "@editVendor": {
+    "description": "Edit-vendor dialog title."
+  },
+  "vendorNameLabel": "Vendor name",
+  "@vendorNameLabel": {
+    "description": "Vendor dialog: name field label."
+  },
+  "vendorAdded": "Vendor added",
+  "@vendorAdded": {
+    "description": "Snackbar after adding a vendor."
+  },
+  "vendorUpdated": "Vendor updated",
+  "@vendorUpdated": {
+    "description": "Snackbar after editing a vendor."
+  },
+  "vendorDeactivated": "Vendor deactivated",
+  "@vendorDeactivated": {
+    "description": "Snackbar after deactivating a vendor."
+  },
+  "vendorReactivated": "Vendor reactivated",
+  "@vendorReactivated": {
+    "description": "Snackbar after reactivating a vendor."
+  },
+  "noVendorsTitle": "No vendors yet",
+  "@noVendorsTitle": {
+    "description": "Empty-state title on the Vendors tab."
+  },
+  "noVendorsBody": "Add suppliers so you can assign them to requests.",
+  "@noVendorsBody": {
+    "description": "Empty-state body on the Vendors tab."
+  },
+  "couldntLoadVendors": "Couldn't load vendors",
+  "@couldntLoadVendors": {
+    "description": "Error-state title on the Vendors tab."
+  },
+  "deactivate": "Deactivate",
+  "@deactivate": {
+    "description": "Action to deactivate a vendor."
+  },
+  "reactivate": "Reactivate",
+  "@reactivate": {
+    "description": "Action to reactivate a deactivated vendor."
+  },
+  "statusActiveLabel": "Active",
+  "@statusActiveLabel": {
+    "description": "Vendor status chip: active."
+  },
+  "statusInactiveLabel": "Inactive",
+  "@statusInactiveLabel": {
+    "description": "Vendor status chip: inactive."
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Generic add/confirm button (e.g. add vendor)."
+  },
+  "loading": "Loading…",
+  "@loading": {
+    "description": "Generic loading placeholder (e.g. while vendors load)."
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Generic save button (e.g. edit vendor)."
+  },
   "navRequests": "Requests",
   "@navRequests": {
     "description": "Navigation rail label for the Requests tab."
