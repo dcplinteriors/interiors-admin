@@ -75,7 +75,7 @@ void main() {
   ) async {
     when(() => supervisors.listAll()).thenAnswer(
       (_) async => const [
-        Supervisor(uid: 'sup1', name: 'Ravi', email: 'r@x.com', phone: null),
+        Supervisor(uid: 'sup1', name: 'Ravi', phone: null),
       ],
     );
     when(() => workOrders.assign('w1', 'sup1')).thenAnswer(

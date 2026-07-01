@@ -12,7 +12,6 @@ void main() {
   const supervisor = Supervisor(
     uid: 'sup1',
     name: 'Ravi',
-    email: 'ravi@dcpl.test',
     phone: '9876543210',
     workOrders: ['Lobby'],
   );
@@ -44,13 +43,7 @@ void main() {
   });
 
   test('loadMore() appends the next page and clears the cursor', () async {
-    const s2 = Supervisor(
-      uid: 'sup2',
-      name: 'Asha',
-      email: 'asha@dcpl.test',
-      phone: null,
-      workOrders: [],
-    );
+    const s2 = Supervisor(uid: 'sup2', name: 'Asha', phone: null);
     when(() => repo.list(cursor: null)).thenAnswer(
       (_) async => const Page(items: [supervisor], nextCursor: 'c1'),
     );
@@ -63,34 +56,28 @@ void main() {
     expect(controller.hasMore, isFalse);
   });
 
-  test('create() prepends the new supervisor and returns it', () async {
+  test('create() prepends the new supervisor and returns the temp password', () async {
     when(
-      () => repo.create(
-        name: any(named: 'name'),
-        email: any(named: 'email'),
-        phone: any(named: 'phone'),
-      ),
-    ).thenAnswer((_) async => supervisor);
-    final created = await controller.create(
-      name: 'Ravi',
-      email: 'ravi@dcpl.test',
-      phone: '9876543210',
-    );
-    expect(created, supervisor);
+      () => repo.create(name: any(named: 'name'), phone: any(named: 'phone')),
+    ).thenAnswer((_) async => (supervisor: supervisor, tempPassword: 'Temp-1234'));
+    final created = await controller.create(name: 'Ravi', phone: '9876543210');
+    expect(created.supervisor, supervisor);
+    expect(created.tempPassword, 'Temp-1234');
     expect(controller.supervisors.first, supervisor);
   });
 
   test('create() propagates ApiException (dialog surfaces it)', () async {
     when(
-      () => repo.create(
-        name: any(named: 'name'),
-        email: any(named: 'email'),
-        phone: any(named: 'phone'),
-      ),
-    ).thenThrow(ApiException(409, 'A user with this email already exists'));
+      () => repo.create(name: any(named: 'name'), phone: any(named: 'phone')),
+    ).thenThrow(ApiException(400, 'bad phone'));
     expect(
-      () => controller.create(name: 'Ravi', email: 'ravi@dcpl.test'),
+      () => controller.create(name: 'Ravi', phone: '9876543210'),
       throwsA(isA<ApiException>()),
     );
+  });
+
+  test('resetPassword() returns the new temp password from the repo', () async {
+    when(() => repo.resetPassword('sup1')).thenAnswer((_) async => 'New-5678');
+    expect(await controller.resetPassword('sup1'), 'New-5678');
   });
 }

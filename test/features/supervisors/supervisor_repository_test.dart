@@ -64,23 +64,31 @@ void main() {
     },
   );
 
-  test('create() POSTs /supervisors with the form body', () async {
+  test(
+    'create() POSTs name + phone and returns the supervisor + temp password',
+    () async {
+      when(() => api.post('/supervisors', body: any(named: 'body'))).thenAnswer(
+        (_) async => {...supervisorJson, 'tempPassword': 'Temp-1234'},
+      );
+      final result = await repo.create(name: 'Ravi', phone: '9876543210');
+      expect(result.supervisor.name, 'Ravi');
+      expect(result.supervisor.phone, '9876543210');
+      expect(result.tempPassword, 'Temp-1234');
+      final body =
+          verify(
+                () => api.post('/supervisors', body: captureAny(named: 'body')),
+              ).captured.single
+              as Map;
+      expect(body, {'name': 'Ravi', 'phone': '9876543210'});
+    },
+  );
+
+  test('resetPassword() POSTs and returns the new temp password', () async {
     when(
-      () => api.post('/supervisors', body: any(named: 'body')),
-    ).thenAnswer((_) async => supervisorJson);
-    final s = await repo.create(
-      name: 'Ravi',
-      email: 'ravi@dcpl.test',
-      phone: '9876543210',
-    );
-    expect(s.email, 'ravi@dcpl.test');
-    final body =
-        verify(
-              () => api.post('/supervisors', body: captureAny(named: 'body')),
-            ).captured.single
-            as Map;
-    expect(body['name'], 'Ravi');
-    expect(body['email'], 'ravi@dcpl.test');
-    expect(body['phone'], '9876543210');
+      () => api.post('/supervisors/sup1/reset-password'),
+    ).thenAnswer((_) async => {'tempPassword': 'New-5678'});
+    final pw = await repo.resetPassword('sup1');
+    expect(pw, 'New-5678');
+    verify(() => api.post('/supervisors/sup1/reset-password')).called(1);
   });
 }

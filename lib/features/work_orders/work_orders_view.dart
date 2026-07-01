@@ -269,16 +269,18 @@ class _RowActions extends GetView<WorkOrdersController> {
   }) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      // Pop via the dialog's own context — the outer page context resolves to go_router's shell
+      // navigator and would tear the page off the stack instead of closing the dialog.
+      builder: (dialogContext) => AlertDialog(
         title: Text(title),
         content: Text(body),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(l10n.cancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(confirmLabel),
           ),
         ],

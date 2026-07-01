@@ -70,9 +70,7 @@ void main() {
 
     when(() => repo.list(cursor: any(named: 'cursor'))).thenAnswer(
       (_) async => const Page(
-        items: [
-          Supervisor(uid: '1', name: 'Ravi', email: 'r@x.com', phone: null),
-        ],
+        items: [Supervisor(uid: '1', name: 'Ravi', phone: null)],
         nextCursor: null,
       ),
     );
@@ -91,11 +89,10 @@ void main() {
             Supervisor(
               uid: '1',
               name: 'Ravi',
-              email: 'r@x.com',
               phone: '999',
               workOrders: ['Lobby'],
             ),
-            Supervisor(uid: '2', name: 'Meera', email: 'm@x.com', phone: null),
+            Supervisor(uid: '2', name: 'Meera', phone: null),
           ],
           nextCursor: null,
         ),
@@ -125,5 +122,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CreateSupervisorDialog), findsOneWidget);
+  });
+
+  testWidgets('reset password: confirms, then shows the new credentials', (
+    tester,
+  ) async {
+    when(() => repo.list(cursor: any(named: 'cursor'))).thenAnswer(
+      (_) async => const Page(
+        items: [Supervisor(uid: '1', name: 'Ravi', phone: '9876543210')],
+        nextCursor: null,
+      ),
+    );
+    when(() => repo.resetPassword('1')).thenAnswer((_) async => 'New-5678');
+
+    await pumpView(tester);
+    await tester.pumpAndSettle();
+
+    // The row action is hover-revealed but still hit-testable.
+    await tester.tap(find.byIcon(Icons.lock_reset).first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reset password?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
+    await tester.pumpAndSettle();
+
+    verify(() => repo.resetPassword('1')).called(1);
+    expect(find.text('New temporary password'), findsOneWidget);
+    expect(find.text('New-5678'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Done'));
+    await tester.pumpAndSettle();
+    expect(find.text('New temporary password'), findsNothing);
   });
 }

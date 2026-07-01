@@ -73,6 +73,48 @@ void _openCreate(BuildContext context) => showDialog(
   builder: (_) => const CreateSupervisorDialog(),
 );
 
+/// Confirms, then resets [s]'s password and shows the new one-time credentials.
+Future<void> _resetPassword(BuildContext context, Supervisor s) async {
+  final l10n = AppLocalizations.of(context);
+  final ok = await showDialog<bool>(
+    context: context,
+    // Pop via the dialog's OWN context: with go_router's shell navigator, popping through the
+    // outer page context tears the page off the branch stack instead of closing the dialog.
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l10n.resetPasswordTitle),
+      content: Text(l10n.resetPasswordBody(s.name)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(l10n.resetPassword),
+        ),
+      ],
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  try {
+    final tempPassword = await Get.find<SupervisorsController>().resetPassword(
+      s.uid,
+    );
+    if (!context.mounted) return;
+    await showSupervisorCredentialsDialog(
+      context,
+      title: l10n.passwordResetTitle,
+      phone: s.phone ?? '', // the panel formats it for display
+      tempPassword: tempPassword,
+    );
+  } on ApiException catch (e) {
+    showAppSnackbar(e.message);
+  } catch (_) {
+    // Anything unexpected must still surface as a message, never a blank screen.
+    showAppSnackbar('Couldn\'t reset the password. Please try again.');
+  }
+}
+
 class _Body extends GetView<SupervisorsController> {
   const _Body();
 
@@ -127,10 +169,9 @@ class _Cards extends StatelessWidget {
         return EntityCard(
           title: s.name,
           fields: [
-            EntityField(l10n.colEmail, text: s.email),
             EntityField(
               l10n.colPhone,
-              text: hasPhone ? s.phone! : '—',
+              text: hasPhone ? formatPhone(s.phone!) : '—',
               muted: !hasPhone,
             ),
             EntityField(
@@ -138,6 +179,14 @@ class _Cards extends StatelessWidget {
               child: _AssignedWorkOrders(s.workOrders),
             ),
           ],
+          footer: Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => _resetPassword(context, s),
+              icon: const Icon(Icons.lock_reset, size: 18),
+              label: Text(l10n.resetPassword),
+            ),
+          ),
         );
       },
     );
@@ -154,10 +203,10 @@ class _Table extends StatelessWidget {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final l10n = AppLocalizations.of(context);
     return DcplTable(
+      trailing: true,
       columns: [
         DcplColumn(l10n.colName, flex: 2),
-        DcplColumn(l10n.colEmail, flex: 3),
-        DcplColumn(l10n.colPhone, fixedWidth: 140),
+        DcplColumn(l10n.colPhone, fixedWidth: 160),
         DcplColumn(l10n.colWorkOrders, flex: 3),
       ],
       rows: [
@@ -165,11 +214,17 @@ class _Table extends StatelessWidget {
           DcplRow(
             cells: [
               PrimaryCell(s.name),
-              Text(s.email),
               s.phone == null || s.phone!.isEmpty
                   ? Text('—', style: TextStyle(color: muted))
-                  : Text(s.phone!),
+                  : Text(formatPhone(s.phone!)),
               _AssignedWorkOrders(s.workOrders),
+            ],
+            actions: [
+              IconButton(
+                tooltip: l10n.resetPassword,
+                icon: const Icon(Icons.lock_reset),
+                onPressed: () => _resetPassword(context, s),
+              ),
             ],
           ),
       ],

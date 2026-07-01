@@ -242,7 +242,7 @@
   "@noSupervisorsTitle": {
     "description": "Empty-state title on the Supervisors screen."
   },
-  "noSupervisorsBody": "Add a supervisor to invite them by email and assign them to work orders.",
+  "noSupervisorsBody": "Add a supervisor to give them a phone sign-in and assign them to work orders.",
   "@noSupervisorsBody": {
     "description": "Empty-state body on the Supervisors screen."
   },
@@ -250,43 +250,79 @@
   "@couldntLoadSupervisors": {
     "description": "Error-state title on the Supervisors screen."
   },
-  "supervisorInviteHint": "We'll email an invite so they can set their own password.",
-  "@supervisorInviteHint": {
-    "description": "Hint in the create-supervisor dialog about the invite email."
+  "createSupervisorHint": "Enter the supervisor's name and 10-digit mobile number. We'll set up their phone sign-in and generate a temporary password.",
+  "@createSupervisorHint": {
+    "description": "Hint in the create-supervisor dialog."
   },
   "nameLabel": "Name",
   "@nameLabel": {
     "description": "Create-supervisor form: name field."
   },
-  "phoneOptionalLabel": "Phone (optional)",
-  "@phoneOptionalLabel": {
-    "description": "Create-supervisor form: optional phone field."
+  "phoneNumberLabel": "Phone number",
+  "@phoneNumberLabel": {
+    "description": "Create-supervisor form: phone field label."
   },
-  "emailInviteHelper": "The invite will be sent here.",
-  "@emailInviteHelper": {
-    "description": "Helper under the email field in the create-supervisor dialog."
+  "phoneNumberHelper": "10-digit mobile number",
+  "@phoneNumberHelper": {
+    "description": "Helper under the phone field in the create-supervisor dialog."
   },
-  "sendInvite": "Send invite",
-  "@sendInvite": {
+  "createSupervisorAction": "Create",
+  "@createSupervisorAction": {
     "description": "Create-supervisor dialog submit button."
   },
-  "inviteSent": "Invite sent to {email}",
-  "@inviteSent": {
-    "description": "Snackbar confirming the set-password invite was sent.",
+  "supervisorCreatedTitle": "Supervisor created",
+  "@supervisorCreatedTitle": {
+    "description": "Create-supervisor dialog title once the supervisor is created and their credentials are shown."
+  },
+  "credentialsWarning": "Save these now — the password won't be shown again.",
+  "@credentialsWarning": {
+    "description": "Warning above the one-time supervisor sign-in credentials."
+  },
+  "phoneLabel": "Phone",
+  "@phoneLabel": {
+    "description": "Label for the phone value in the credentials panel."
+  },
+  "tempPasswordLabel": "Temporary password",
+  "@tempPasswordLabel": {
+    "description": "Label for the temporary password value in the credentials panel."
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Tooltip on the copy-to-clipboard buttons in the credentials panel."
+  },
+  "copiedToClipboard": "Copied to clipboard",
+  "@copiedToClipboard": {
+    "description": "Snackbar after copying a credential to the clipboard."
+  },
+  "copyCredentials": "Copy phone & password",
+  "@copyCredentials": {
+    "description": "Button that copies the supervisor's phone and temp password together as labelled lines."
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Button that closes the one-time credentials panel."
+  },
+  "resetPassword": "Reset password",
+  "@resetPassword": {
+    "description": "Row action and confirm button to reset a supervisor's password."
+  },
+  "resetPasswordTitle": "Reset password?",
+  "@resetPasswordTitle": {
+    "description": "Confirm dialog title for resetting a supervisor's password."
+  },
+  "resetPasswordBody": "This replaces {name}'s password with a new temporary one. Their current password will stop working.",
+  "@resetPasswordBody": {
+    "description": "Confirm dialog body for resetting a supervisor's password.",
     "placeholders": {
-      "email": {
+      "name": {
         "type": "String",
-        "example": "name@dcpl.com"
+        "example": "Ravi"
       }
     }
   },
-  "emailAlreadyInUse": "That email already has an account.",
-  "@emailAlreadyInUse": {
-    "description": "Error strip when the email already has an account (409)."
-  },
-  "emailInUseShort": "Already in use",
-  "@emailInUseShort": {
-    "description": "Inline email-field error when the address is taken."
+  "passwordResetTitle": "New temporary password",
+  "@passwordResetTitle": {
+    "description": "Title of the dialog showing the new password after a reset."
   },
   "materialRequestsTitle": "Material Requests",
   "@materialRequestsTitle": {

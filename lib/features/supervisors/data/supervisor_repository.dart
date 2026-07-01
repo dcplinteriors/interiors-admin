@@ -1,6 +1,10 @@
 import 'package:dcpl_admin/core/core.dart';
 import 'package:dcpl_admin/features/supervisors/data/supervisor.dart';
 
+/// The created supervisor plus the one-time temporary password to hand over
+/// (the password is never retrievable again).
+typedef CreatedSupervisorResult = ({Supervisor supervisor, String tempPassword});
+
 abstract class SupervisorRepository {
   /// Lists supervisors (cursor-paginated), continuing after [cursor] (null = first page).
   /// Drives the table.
@@ -9,11 +13,15 @@ abstract class SupervisorRepository {
   /// Every supervisor (pages through `list`). For the assign picker, which needs the full set.
   Future<List<Supervisor>> listAll();
 
-  Future<Supervisor> create({
+  /// Creates a supervisor from name + 10-digit [phone]. The backend provisions the
+  /// Firebase account and returns the supervisor plus a one-time temporary password.
+  Future<CreatedSupervisorResult> create({
     required String name,
-    required String email,
-    String? phone,
+    required String phone,
   });
+
+  /// Resets a supervisor's password, returning the new one-time temporary password.
+  Future<String> resetPassword(String uid);
 }
 
 class ApiSupervisorRepository implements SupervisorRepository {
@@ -43,16 +51,18 @@ class ApiSupervisorRepository implements SupervisorRepository {
   }
 
   @override
-  Future<Supervisor> create({
+  Future<CreatedSupervisorResult> create({
     required String name,
-    required String email,
-    String? phone,
+    required String phone,
   }) async {
-    final user = await _api.supervisors.create(
-      name: name,
-      email: email,
-      phone: phone,
+    final created = await _api.supervisors.create(name: name, phone: phone);
+    return (
+      supervisor: Supervisor.fromUser(created.supervisor),
+      tempPassword: created.tempPassword,
     );
-    return Supervisor.fromUser(user);
   }
+
+  @override
+  Future<String> resetPassword(String uid) =>
+      _api.supervisors.resetPassword(uid);
 }

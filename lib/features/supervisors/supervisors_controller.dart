@@ -17,15 +17,19 @@ class SupervisorsController extends PaginatedController<Supervisor> {
   Future<Page<Supervisor>> fetchPage({String? cursor}) =>
       _repo.list(cursor: cursor);
 
-  /// Creates a supervisor (the backend also emails them a set-password invite) and
-  /// prepends it to the list. Throws [ApiException] on failure for the dialog to show.
-  Future<Supervisor> create({
+  /// Creates a supervisor (the backend provisions their phone sign-in) and prepends
+  /// it to the list. Returns the supervisor plus the one-time temporary password for
+  /// the dialog to surface. Throws [ApiException] on failure for the dialog to show.
+  Future<CreatedSupervisorResult> create({
     required String name,
-    required String email,
-    String? phone,
+    required String phone,
   }) async {
-    final created = await _repo.create(name: name, email: email, phone: phone);
-    supervisors.insert(0, created);
+    final created = await _repo.create(name: name, phone: phone);
+    supervisors.insert(0, created.supervisor);
     return created;
   }
+
+  /// Resets a supervisor's password, returning the new one-time temporary password.
+  /// Throws [ApiException] on failure for the caller to show.
+  Future<String> resetPassword(String uid) => _repo.resetPassword(uid);
 }

@@ -2,3 +2,4 @@
 library;
 
 export 'create_supervisor_dialog.dart';
+export 'supervisor_credentials_panel.dart';

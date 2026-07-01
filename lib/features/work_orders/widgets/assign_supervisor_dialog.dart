@@ -116,7 +116,9 @@ class _AssignSupervisorDialogState extends State<AssignSupervisorDialog> {
                         RadioListTile<String>(
                           value: s.uid,
                           title: Text(s.name),
-                          subtitle: Text(s.email),
+                          subtitle: (s.phone == null || s.phone!.isEmpty)
+                              ? null
+                              : Text(s.phone!),
                           secondary: CircleAvatar(
                             child: Text(_initials(s.name)),
                           ),
